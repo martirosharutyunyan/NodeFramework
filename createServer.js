@@ -1,10 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process')
 const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
 
-
-const { Database } = require('metasql')
+const { Database } = require('metasql');
 const db = new Database(config.db)
 
 
@@ -40,24 +38,26 @@ const getFiles = async () => new Promise((res, rej) => {
 })
 
 
-exec('git init', console.log)
+const express = args => {
+    return `const express = require("express");
+const morgan = require("morgan");
+const app = express();
+app.use(morgan(\`dev\`));
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: false
+}));
+${args.application}
+app.listen(${args.port}, () => console.log("server in running on http://localhost:${args.port}"))`
+}
 
 
 
-// const express = require("express");
-// const morgan = require("morgan");
-// const app = express();
-// app.use(morgan(`dev`));
-// app.use(express.json())
-// app.use(express.urlencoded({
-//     extended: false
-// }));
-// app.listen(3000, () => console.log(`server in running on http://localhost:${port}`))
 
 const createServer = async () => {
     const data = await getFiles()
-    data.forEach(e => {
-        const router = fs.readFileSync(e, 'utf8').split('\r\n').map(e => {
+    const routers = data.map(interface => {
+        return {rout:fs.readFileSync(interface, 'utf8').split('\r\n').map(e => {
             const index = e.search('node')
             if(index === -1) return e;
             const str = e.split('.').find(e => {
@@ -67,14 +67,31 @@ const createServer = async () => {
             })
             const modulIndex = e.search(str)
             const rq = `require("${str}")`
-            return e.slice(0, 27) + rq + e.slice(modulIndex + str.length)
-        }).join('\r\n')
-        
+            return e.slice(0, index) + rq + e.slice(modulIndex + str.length)
+        }), interface:interface.split('application')[1].slice(0, -3)}
     })
+    let str = ''
+    routers.map(({ rout, interface }) => {
+        const [first, ...len] = rout
+        
+        const router = Object.keys(eval(rout.join('\r\n'))).map(request => {
+            const body = request === 'get' ? 'query' : 'body'
+            const func = `await (${eval(rout.join('\r\n'))[request].toString()})(${body})`;
+            str += `
+            app.${request}("${interface}", async (req, res) => {
+                const { ${body} } = req
+                res.send(${func})
+            })
+            `
+        })
+    })
+    return str;
 }
 
-createServer()
-
+createServer().then(async res => {
+    const expressApp = express({ port: config.port, application:res }) 
+    fs.writeFile('./express.js', expressApp, err => {})
+})
 
 
 

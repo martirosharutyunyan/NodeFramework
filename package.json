@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "express": "^4.17.1",
-    "metasql": "^1.1.5"
+    "metasql": "^1.1.5",
+    "morgan": "^1.10.0"
   }
 }

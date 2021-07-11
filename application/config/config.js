@@ -5,5 +5,6 @@
         port: 5432,
         host: "localhost",
         user: "postgres",
-    }
+    },
+    port: 8888,
 })
