@@ -42,11 +42,20 @@ const express = args => {
     return `const express = require("express");
 const morgan = require("morgan");
 const app = express();
+const fs = require('fs');
+const path = require('path');
 app.use(morgan(\`dev\`));
 app.use(express.json())
 app.use(express.urlencoded({
     extended: false
 }));
+
+const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
+
+const { Database } = require('metasql');
+const db = new Database(config.db)
+const { Database } = require('metasql');
+const db = new Database()
 ${args.application}
 app.listen(${args.port}, () => console.log("server in running on http://localhost:${args.port}"))`
 }
