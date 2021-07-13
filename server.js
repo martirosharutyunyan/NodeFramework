@@ -20,7 +20,6 @@ app.post("/api/app", async (req, res) => {
         return name
     })(body))
 })
-            
 app.get("/api/app", async (req, res) => {
     const { query } = req
     res.send(await (async ({a}) => {
@@ -28,14 +27,12 @@ app.get("/api/app", async (req, res) => {
         return a + 2
     })(query))
 })
-            
 app.post("/api/test", async (req, res) => {
     const { body } = req
     res.send(await (async ({ pass }) => {
         return node.bcrypt.hash(pass, 10)
     })(body))
 })
-            
 app.get("/api/user/getCity", async (req, res) => {
     const { query } = req
     res.send(await (async ({ city }) => {
@@ -43,7 +40,6 @@ app.get("/api/user/getCity", async (req, res) => {
         return city;
     })(query))
 })
-            
 app.post("/api/user/getProduct", async (req, res) => {
     const { body } = req
     res.send(await (async ({ name }) => {
@@ -52,14 +48,12 @@ app.post("/api/user/getProduct", async (req, res) => {
         return product; 
     })(body))
 })
-            
 app.get("/api/user/getProduct", async (req, res) => {
     const { query } = req
     res.send(await (async ({ name }) => {
         return name;
     })(query))
 })
-            
 app.get("/api/user/test/test", async (req, res) => {
     const { query } = req
     res.send(await (async ({ city }) => {
@@ -67,7 +61,6 @@ app.get("/api/user/test/test", async (req, res) => {
         return city;
     })(query))
 })
-            
 app.get("/api/user/test/test2", async (req, res) => {
     const { query } = req
     res.send(await (async ({ city }) => {
@@ -75,5 +68,4 @@ app.get("/api/user/test/test2", async (req, res) => {
         return city;
     })(query))
 })
-            
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))
