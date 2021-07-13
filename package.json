@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node createServer.js && nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +12,11 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "express": "^4.17.1",
+    "impress": "^2.4.3",
     "metasql": "^1.1.5",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
   }
 }

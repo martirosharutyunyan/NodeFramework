@@ -1,6 +1,7 @@
 ({
-    post:async ({ name }) => {
-        return name;
+    post: async ({ name }) => {
+        const path = node.path
+        return name
     },
 
     get: async ({a}) => {
