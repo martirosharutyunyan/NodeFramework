@@ -34,7 +34,6 @@ modules.test.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/appli
 Object.freeze(modules)
 
 
-
 app.post("/api/app", async (req, res) => {
     const { body } = req
     res.send(await (async ({ name }) => {

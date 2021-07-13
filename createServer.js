@@ -83,9 +83,8 @@ const api = async () => {
     const data = await getFiles('./application/api/')
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
     const folder = [...new Set(folders)]
-    const folder_ = folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).map(path => {
+    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
-        return path;
     })
     router.map(({ path, interface }) => {
         str += `\n${interface} = eval(fs.readFileSync('${path}', 'utf8'))`
@@ -96,15 +95,14 @@ ${str}
 Object.freeze(api)
 `
 }
-const modulesF = async () => {
+const modules = async () => {
     folders = []
     let str = ''
     const data = await getFiles('./application/modules/')
     const folder = [...new Set(folders)]
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    const folder_ = folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).map(path => {
+    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
-        return path;
     })
     router.map(({ path, interface }) => {
         str += `\n${interface} = eval(fs.readFileSync('${path}', 'utf8'))`
@@ -118,7 +116,7 @@ Object.freeze(modules)
 
 const express = async args => {
     const data = await api()
-    const modules = await modulesF()
+    const modul = await modules()
     return `const express = require("express");
 const morgan = require("morgan");
 const app = express();
@@ -132,7 +130,7 @@ const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
 const { Database } = require('metasql');
 const db = new Database(config.db)
 ${data}
-${modules}
+${modul}
 ${args.application}
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))`
 }
