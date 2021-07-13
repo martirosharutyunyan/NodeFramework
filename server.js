@@ -7,11 +7,33 @@ app.use(express.json())
 app.use(express.urlencoded({
     extended: false
 }));
-const node = require("./packages.js")
 const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
-
 const { Database } = require('metasql');
 const db = new Database(config.db)
+
+const api = {}
+
+api.user = {}
+api.user.test = {}
+api.user.test.router = {}
+api.app = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
+api.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/test.js', 'utf8'))
+api.user.getCity = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
+api.user.getProduct = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
+api.user.test.router.router = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/test/router/router.js', 'utf8'))
+api.user.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/test/test.js', 'utf8'))
+api.user.test.test2 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/test/test2.js', 'utf8'))
+Object.freeze(api)
+
+
+const modules = {}
+
+modules.test = {}
+modules.test.test = {}
+modules.test.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/modules/test/test/test.js', 'utf8'))
+Object.freeze(modules)
+
+
 
 app.post("/api/app", async (req, res) => {
     const { body } = req
@@ -52,6 +74,13 @@ app.get("/api/user/getProduct", async (req, res) => {
     const { query } = req
     res.send(await (async ({ name }) => {
         return name;
+    })(query))
+})
+app.get("/api/user/test/router/router", async (req, res) => {
+    const { query } = req
+    res.send(await (async ({ city }) => {
+        console.log({ city })
+        return city;
     })(query))
 })
 app.get("/api/user/test/test", async (req, res) => {
