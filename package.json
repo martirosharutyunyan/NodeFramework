@@ -4,15 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node createServer.js && nodemon server.js"
+    "start": "concurrently \"node createServer.js\"  \"nodemon server.js\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.0.1",
+    "concurrently": "^6.2.0",
     "express": "^4.17.1",
-    "impress": "^2.4.3",
     "metasql": "^1.1.5",
     "morgan": "^1.10.0"
   },

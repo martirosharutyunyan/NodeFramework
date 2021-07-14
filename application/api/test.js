@@ -1,5 +1,3 @@
 ({
-    post: async ({ pass }) => {
-        return node.bcrypt.hash(pass, 10)
-    }
+    get: async ({ name }) => name  
 })

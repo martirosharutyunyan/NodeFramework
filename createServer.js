@@ -1,6 +1,7 @@
 const fs = require('fs');
+const { readdirSync } = fs
 const path = require('path');
-const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
+const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 const node = { process };
 const npm = {};
 const methods = ['get', 'post', 'delete', 'put']
@@ -10,22 +11,20 @@ const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
 const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
 const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
 const internals = [...system, ...tools, ...streams, ...async, ...network];
-let folders = []
 
 const pkg = require(process.cwd() + '/package.json');
 const dependencies = [...internals];
 if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
 
 for (const name of dependencies) {
-  if (name === 'impress') continue;
-  let lib = null;
+    let lib = null;
   try {
     lib = require(name);
   } catch {
     continue;
   }
   if (internals.includes(name)) {
-    node[name] = lib;
+      node[name] = lib;
     continue;
   }
   npm[name] = lib;
@@ -38,8 +37,24 @@ node.asyncHooks = node['async_hooks'];
 node.worker = node['worker_threads'];
 node.fsp = node.fs.promises;
 
+const flatten = lists => {
+    return lists.reduce((a, b) => a.concat(b), []);
+}
 
+const getDirectories = srcpath => {
+    return fs.readdirSync(srcpath)
+    .map(file => path.join(srcpath, file))
+    .filter(path => fs.statSync(path).isDirectory());
+}
 
+const getDirectoriesRecursive = srcpath => {
+    return [srcpath, ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
+}
+
+const apiPath = process.cwd() + '\\application\\api'
+const modulPath = process.cwd() + '\\application\\modules'
+
+const folders = path => getDirectoriesRecursive(path).filter(e => e !== path)
 
 
 const walk = (dir, done) => {
@@ -52,7 +67,6 @@ const walk = (dir, done) => {
             if (!file) return done(null, results);
             file = path.resolve(dir, file);
             fs.stat(file, (err, stat) => {
-                if(stat.isDirectory()) folders.push(file);
                 if (stat && stat.isDirectory()) {
                     walk(file, (err, res) => {
                         results = results.concat(res);
@@ -80,9 +94,9 @@ const getFiles = async path => new Promise(res => {
 
 const api = async () => {
     let str = ''
-    const data = await getFiles('./application/api/')
+    const data = await getFiles(apiPath)
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    const folder = [...new Set(folders)]
+    const folder = folders(apiPath).filter(e => e.includes('application\\api'))
     folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
     })
@@ -96,10 +110,9 @@ Object.freeze(api)
 `
 }
 const modules = async () => {
-    folders = []
     let str = ''
-    const data = await getFiles('./application/modules/')
-    const folder = [...new Set(folders)]
+    const data = await getFiles(modulPath)
+    const folder = folders(modulPath).filter(e => e.includes('application\\modules'))
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
     folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
@@ -114,7 +127,7 @@ Object.freeze(modules)
 `
 }
 
-const express = async args => {
+const express = async application => {
     const data = await api()
     const modul = await modules()
     return `const express = require("express");
@@ -126,12 +139,12 @@ app.use(express.json())
 app.use(express.urlencoded({
     extended: false
 }));
-const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
+const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 const { Database } = require('metasql');
 const db = new Database(config.db)
 ${data}
 ${modul}
-${args.application}
+${application}
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))`
 }
 
@@ -140,7 +153,7 @@ app.listen(config.port, () => console.log("server in running on port http://loca
 
 
 const createServer = async () => {
-    const data = await getFiles('./application/api/')
+    const data = await getFiles(apiPath)
     const routers = data.map(interface => {
         return { rout:fs.readFileSync(interface, 'utf8'), interface:interface.split('application')[1].slice(0, -3) }
     })
@@ -155,18 +168,15 @@ app.${request}("${interface}", async (req, res) => {
     const { ${body} } = req
     res.send(${func})
 })`
-        })
-    })
-    return application;
+})
+})
+    const expressApp = await express(application)
+    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
+    return expressApp
 }
 
 
 
-createServer().then(async res => {
-    const time = new Date()
-    const expressApp = await express({ port: config.port, application: res }) 
-    fs.writeFile('./server.js', expressApp, err => {})
-    console.log(new Date() - time)
-})
 
-// module.exports = api();
+
+createServer()

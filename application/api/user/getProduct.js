@@ -6,6 +6,6 @@
     },
 
     get: async ({ name }) => {
-        return name;
+        return name
     }
 })

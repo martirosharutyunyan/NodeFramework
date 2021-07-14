@@ -7,17 +7,22 @@ app.use(express.json())
 app.use(express.urlencoded({
     extended: false
 }));
-const config = eval(fs.readFileSync('./application/config/config.js', 'utf8'))
+const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 const { Database } = require('metasql');
 const db = new Database(config.db)
 
 const api = {}
 
+api.ddsa = {}
 api.user = {}
 api.user.test = {}
 api.user.test.router = {}
 api.app = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
+api.tes2 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/tes2.js', 'utf8'))
 api.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/test.js', 'utf8'))
+api.test3 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/test3.js', 'utf8'))
+api.test4 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/test4.js', 'utf8'))
+api.test5 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/test5.js', 'utf8'))
 api.user.getCity = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
 api.user.getProduct = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
 api.user.test.router.router = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/test/router/router.js', 'utf8'))
@@ -48,11 +53,27 @@ app.get("/api/app", async (req, res) => {
         return a + 2
     })(query))
 })
-app.post("/api/test", async (req, res) => {
+app.post("/api/tes2", async (req, res) => {
     const { body } = req
     res.send(await (async ({ pass }) => {
         return node.bcrypt.hash(pass, 10)
     })(body))
+})
+app.get("/api/test", async (req, res) => {
+    const { query } = req
+    res.send(await (async ({ name }) => name)(query))
+})
+app.get("/api/test3", async (req, res) => {
+    const { query } = req
+    res.send(await (async({ name }) => name)(query))
+})
+app.get("/api/test4", async (req, res) => {
+    const { query } = req
+    res.send(await (async({ name }) => name + '')(query))
+})
+app.get("/api/test5", async (req, res) => {
+    const { query } = req
+    res.send(await (async({ name }) => name + '')(query))
 })
 app.get("/api/user/getCity", async (req, res) => {
     const { query } = req
@@ -72,7 +93,7 @@ app.post("/api/user/getProduct", async (req, res) => {
 app.get("/api/user/getProduct", async (req, res) => {
     const { query } = req
     res.send(await (async ({ name }) => {
-        return name;
+        return name
     })(query))
 })
 app.get("/api/user/test/router/router", async (req, res) => {
