@@ -151,31 +151,32 @@ app.listen(config.port, () => console.log("server in running on port http://loca
 
 
 
+// const createServer2 = async () => {
+//     const data = await getFiles(apiPath)
+//     const routers = data.map(interface => {
+//         return { rout: eval(fs.readFileSync(interface, 'utf8')), interface:interface.split('application')[1].slice(0, -3) }
+//     })
+//     let application = ''
+//     routers.map(({ rout, interface }) => {
+//         Object.keys(rout).forEach(request => {
+//             if(!methods.includes(request)) return 
+//             const body = request === 'get' ? 'query' : 'body'
+//             const func = `await (${rout[request].toString()})(${body})`;
+//             application += `
+// app.${request}("${interface}", async (req, res) => {
+//     const { ${body} } = req
+//     res.send(${func})
+// })`
+// })
+// })
+//    const expressApp = await express(application)
+//    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
+//    return expressApp
+// }
+
+// createServer2()
+
 const createServer = async () => {
-    const data = await getFiles(apiPath)
-    const routers = data.map(interface => {
-        return { rout: eval(fs.readFileSync(interface, 'utf8')), interface:interface.split('application')[1].slice(0, -3) }
-    })
-    let application = ''
-    routers.map(({ rout, interface }) => {
-        Object.keys(rout).forEach(request => {
-            if(!methods.includes(request)) return 
-            const body = request === 'get' ? 'query' : 'body'
-            const func = `await (${rout[request].toString()})(${body})`;
-            application += `
-app.${request}("${interface}", async (req, res) => {
-    const { ${body} } = req
-    res.send(${func})
-})`
-})
-})
-    const expressApp = await express(application)
-    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
-    return expressApp
-}
-
-
-const createServer2 = async () => {
     const data = await getFiles(apiPath)
     let application = ''
     const routers = data.map(interface => ({
@@ -188,9 +189,9 @@ const createServer2 = async () => {
             if(!methods.includes(request)) return 
             const body = request === 'get' ? 'query' : 'body'
             application += `
-app.${request}("${interface}", (req, res) => {
+app.${request}("${interface}", async (req, res) => {
     const { ${body} } = req
-    res.send(${callback}.${request}(${body}))
+    res.send(await ${callback}.${request}(${body}))
 })
             `
         })
@@ -199,6 +200,5 @@ app.${request}("${interface}", (req, res) => {
     fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
     return expressApp
 }
-createServer2()
+createServer()
 
-// createServer()
