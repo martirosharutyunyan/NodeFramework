@@ -18,16 +18,15 @@ if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
 
 for (const name of dependencies) {
     let lib = null;
-  try {
-    lib = require(name);
-  } catch {
-    continue;
-  }
-  if (internals.includes(name)) {
-      node[name] = lib;
-    continue;
-  }
-  npm[name] = lib;
+    try {
+        lib = require(name);
+    } catch {
+        continue;
+    }
+    if (internals.includes(name)) {
+        node[name] = lib;
+        continue;
+    }
 }
 
 node.childProcess = node['child_process'];
@@ -132,8 +131,8 @@ const express = async application => {
     const modul = await modules()
     return `const express = require("express");
 const morgan = require("morgan");
-const app = express();
 const fs = require('fs');
+const app = express();
 app.use(morgan(\`dev\`));
 app.use(express.json())
 app.use(express.urlencoded({
@@ -155,14 +154,14 @@ app.listen(config.port, () => console.log("server in running on port http://loca
 const createServer = async () => {
     const data = await getFiles(apiPath)
     const routers = data.map(interface => {
-        return { rout:fs.readFileSync(interface, 'utf8'), interface:interface.split('application')[1].slice(0, -3) }
+        return { rout: eval(fs.readFileSync(interface, 'utf8')), interface:interface.split('application')[1].slice(0, -3) }
     })
     let application = ''
     routers.map(({ rout, interface }) => {
-        Object.keys(eval(rout)).forEach(request => {
+        Object.keys(rout).forEach(request => {
             if(!methods.includes(request)) return 
             const body = request === 'get' ? 'query' : 'body'
-            const func = `await (${eval(rout)[request].toString()})(${body})`;
+            const func = `await (${rout[request].toString()})(${body})`;
             application += `
 app.${request}("${interface}", async (req, res) => {
     const { ${body} } = req
@@ -176,7 +175,30 @@ app.${request}("${interface}", async (req, res) => {
 }
 
 
+const createServer2 = async () => {
+    const data = await getFiles(apiPath)
+    let application = ''
+    const routers = data.map(interface => ({
+        callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
+        interface: interface.split('application')[1].slice(0, -3),
+        rout: eval(fs.readFileSync(interface, 'utf8'))
+    }))
+    routers.forEach(({ rout, interface, callback }) => {
+        Object.keys(rout).forEach(request => {
+            if(!methods.includes(request)) return 
+            const body = request === 'get' ? 'query' : 'body'
+            application += `
+app.${request}("${interface}", (req, res) => {
+    const { ${body} } = req
+    res.send(${callback}.${request}(${body}))
+})
+            `
+        })
+    })
+    const expressApp = await express(application)
+    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
+    return expressApp
+}
+createServer2()
 
-
-
-createServer()
+// createServer()

@@ -1,3 +1,5 @@
 ({
-    get: async({ name }) => name + ''
+    get: async({ name }) => {
+        return modules.test.test.test.get({ name });
+    }
 })

@@ -1,7 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
-const app = express();
 const fs = require('fs');
+const app = express();
 app.use(morgan(`dev`));
 app.use(express.json())
 app.use(express.urlencoded({
@@ -39,82 +39,69 @@ modules.test.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/appli
 Object.freeze(modules)
 
 
-app.post("/api/app", async (req, res) => {
+app.post("/api/app", (req, res) => {
     const { body } = req
-    res.send(await (async ({ name }) => {
-        const path = node.path
-        return name
-    })(body))
+    res.send(api.app.post(body))
 })
-app.get("/api/app", async (req, res) => {
+            
+app.get("/api/app", (req, res) => {
     const { query } = req
-    res.send(await (async ({a}) => {
-        console.log(a)
-        return a + 2
-    })(query))
+    res.send(api.app.get(query))
 })
-app.post("/api/tes2", async (req, res) => {
+            
+app.post("/api/tes2", (req, res) => {
     const { body } = req
-    res.send(await (async ({ pass }) => {
-        return node.bcrypt.hash(pass, 10)
-    })(body))
+    res.send(api.tes2.post(body))
 })
-app.get("/api/test", async (req, res) => {
+            
+app.get("/api/test", (req, res) => {
     const { query } = req
-    res.send(await (async ({ name }) => name)(query))
+    res.send(api.test.get(query))
 })
-app.get("/api/test3", async (req, res) => {
+            
+app.get("/api/test3", (req, res) => {
     const { query } = req
-    res.send(await (async({ name }) => name)(query))
+    res.send(api.test3.get(query))
 })
-app.get("/api/test4", async (req, res) => {
+            
+app.get("/api/test4", (req, res) => {
     const { query } = req
-    res.send(await (async({ name }) => name + '')(query))
+    res.send(api.test4.get(query))
 })
-app.get("/api/test5", async (req, res) => {
+            
+app.get("/api/test5", (req, res) => {
     const { query } = req
-    res.send(await (async({ name }) => name + '')(query))
+    res.send(api.test5.get(query))
 })
-app.get("/api/user/getCity", async (req, res) => {
+            
+app.get("/api/user/getCity", (req, res) => {
     const { query } = req
-    res.send(await (async ({ city }) => {
-        console.log({ city })
-        return city;
-    })(query))
+    res.send(api.user.getCity.get(query))
 })
-app.post("/api/user/getProduct", async (req, res) => {
+            
+app.post("/api/user/getProduct", (req, res) => {
     const { body } = req
-    res.send(await (async ({ name }) => {
-        console.log(codeOfProduct)
-        const product = await db.select('products', ['id', 'productNameHY'],  { codeOfProduct })
-        return product; 
-    })(body))
+    res.send(api.user.getProduct.post(body))
 })
-app.get("/api/user/getProduct", async (req, res) => {
+            
+app.get("/api/user/getProduct", (req, res) => {
     const { query } = req
-    res.send(await (async ({ name }) => {
-        return name
-    })(query))
+    res.send(api.user.getProduct.get(query))
 })
-app.get("/api/user/test/router/router", async (req, res) => {
+            
+app.get("/api/user/test/router/router", (req, res) => {
     const { query } = req
-    res.send(await (async ({ city }) => {
-        console.log({ city })
-        return city;
-    })(query))
+    res.send(api.user.test.router.router.get(query))
 })
-app.get("/api/user/test/test", async (req, res) => {
+            
+app.get("/api/user/test/test", (req, res) => {
     const { query } = req
-    res.send(await (async ({ city }) => {
-        console.log({ city })
-        return city;
-    })(query))
+    res.send(api.user.test.test.get(query))
 })
-app.get("/api/user/test/test2", async (req, res) => {
+            
+app.get("/api/user/test/test2", (req, res) => {
     const { query } = req
-    res.send(await (async ({ city }) => {
-        console.log({ city })
-        return city;
-    })(query))
+    res.send(api.user.test.test2.get(query))
 })
+            
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))

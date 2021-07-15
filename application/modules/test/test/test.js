@@ -1,5 +1,5 @@
 ({
     get: async ({ name }) => {
-        return name;
+        return await db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" });
     }
 })
