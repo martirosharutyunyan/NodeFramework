@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const fs = require('fs');
+const Thread = require("funthreads")
 const app = express();
 app.use(morgan(`dev`));
 app.use(express.json())
@@ -42,66 +43,79 @@ Object.freeze(modules)
 app.post("/api/app", async (req, res) => {
     const { body } = req
     res.send(await api.app.post(body))
+    Thread.run(async () => await api.app.post(body)).then(res.send)
 })
             
 app.get("/api/app", async (req, res) => {
     const { query } = req
     res.send(await api.app.get(query))
+    Thread.run(async () => await api.app.get(query)).then(res.send)
 })
             
 app.post("/api/tes2", async (req, res) => {
     const { body } = req
     res.send(await api.tes2.post(body))
+    Thread.run(async () => await api.tes2.post(body)).then(res.send)
 })
             
 app.get("/api/test", async (req, res) => {
     const { query } = req
     res.send(await api.test.get(query))
+    Thread.run(async () => await api.test.get(query)).then(res.send)
 })
             
 app.get("/api/test3", async (req, res) => {
     const { query } = req
     res.send(await api.test3.get(query))
+    Thread.run(async () => await api.test3.get(query)).then(res.send)
 })
             
 app.get("/api/test4", async (req, res) => {
     const { query } = req
     res.send(await api.test4.get(query))
+    Thread.run(async () => await api.test4.get(query)).then(res.send)
 })
             
 app.get("/api/test5", async (req, res) => {
     const { query } = req
     res.send(await api.test5.get(query))
+    Thread.run(async () => await api.test5.get(query)).then(res.send)
 })
             
 app.get("/api/user/getCity", async (req, res) => {
     const { query } = req
     res.send(await api.user.getCity.get(query))
+    Thread.run(async () => await api.user.getCity.get(query)).then(res.send)
 })
             
 app.post("/api/user/getProduct", async (req, res) => {
     const { body } = req
     res.send(await api.user.getProduct.post(body))
+    Thread.run(async () => await api.user.getProduct.post(body)).then(res.send)
 })
             
 app.get("/api/user/getProduct", async (req, res) => {
     const { query } = req
     res.send(await api.user.getProduct.get(query))
+    Thread.run(async () => await api.user.getProduct.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/router/router", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.router.router.get(query))
+    Thread.run(async () => await api.user.test.router.router.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/test", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.test.get(query))
+    Thread.run(async () => await api.user.test.test.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/test2", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.test2.get(query))
+    Thread.run(async () => await api.user.test.test2.get(query)).then(res.send)
 })
             
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))

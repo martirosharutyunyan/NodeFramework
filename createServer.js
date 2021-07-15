@@ -132,6 +132,7 @@ const express = async application => {
     return `const express = require("express");
 const morgan = require("morgan");
 const fs = require('fs');
+const Thread = require("funthreads")
 const app = express();
 app.use(morgan(\`dev\`));
 app.use(express.json())
@@ -192,6 +193,7 @@ const createServer = async () => {
 app.${request}("${interface}", async (req, res) => {
     const { ${body} } = req
     res.send(await ${callback}.${request}(${body}))
+    Thread.run(async () => await ${callback}.${request}(${body})).then(res.send)
 })
             `
         })

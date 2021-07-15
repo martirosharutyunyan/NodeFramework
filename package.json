@@ -12,6 +12,7 @@
   "dependencies": {
     "concurrently": "^6.2.0",
     "express": "^4.17.1",
+    "funthreads": "^1.0.1",
     "metasql": "^1.1.5",
     "morgan": "^1.10.0"
   },
