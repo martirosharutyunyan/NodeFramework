@@ -7,9 +7,5 @@
     get: async ({a}) => {
         console.log(a)
         return a + 2
-    },
-
-    static2: async({a}) => {
-        return a;
     }
 })

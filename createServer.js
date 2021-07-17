@@ -57,12 +57,11 @@ const getFiles = async path => new Promise(res => {
     })
 })
 
-
 const api = async () => {
     let str = ''
     const data = await getFiles(apiPath)
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    const folder = folders(apiPath).filter(e => e.includes('application\\api'))
+    const folder = folders(apiPath)
     folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
     })
@@ -97,9 +96,9 @@ const express = async application => {
     const data = await api()
     const modul = await modules()
     return `const node = { process };
-const npm = {};
-
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+    const npm = {};
+    
+    const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
 const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
 const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
 const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
@@ -113,9 +112,9 @@ if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
 for (const name of dependencies) {
   let lib = null;
   try {
-    lib = require(name);
+      lib = require(name);
   } catch {
-    continue;
+      continue;
   }
   if (internals.includes(name)) {
     node[name] = lib;
@@ -133,8 +132,9 @@ node.fsp = node.fs.promises;
 Object.freeze(node)
 Object.freeze(npm)
 const { fs } = node
-const { express, morgan } = npm 
+const { express, morgan, cors } = npm 
 const app = express();
+app.use(cors())
 app.use(morgan('dev'));
 app.use(express.json())
 app.use(express.urlencoded({
@@ -150,6 +150,27 @@ app.listen(config.port, () => console.log("server in running on port http://loca
 }
 
 
+
+const frontConnection = async () => {
+    let str = `module.exports = axios => {`
+    const data = await getFiles(apiPath)
+    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
+    const folder = folders(apiPath)
+    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
+        str += `\n    ${path} = {}` 
+    })
+    router.map(({ path, interface }) => {
+        str += `
+    ${interface} = {}
+    ${interface}.get = async params => (await axios.get(\\\`${path}?$\\\{Object.entries(params).map(([key, value]) => \\\`$\\\{key}=$\\\{value}\\\`)})
+    ${interface}.post = async params => (await axios.post("${path}", params)).data`
+    })
+    return `
+    ${str}
+    return Object.freeze(api)
+}
+`
+}
 
 
 
@@ -169,18 +190,21 @@ app.listen(config.port, () => console.log("server in running on port http://loca
 //     const { ${body} } = req
 //     res.send(${func})
 // })`
-// })
-// })
+//        })
+//    })
 //    const expressApp = await express(application)
 //    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
 //    return expressApp
 // }
-
+                    
 // createServer2()
-
+                    
 const createServer = async () => {
     const data = await getFiles(apiPath)
-    let application = ''
+    const front = await frontConnection()
+    let application = `
+app.get('/api/connection', (req, res) => res.send(\`${front}\`))
+    `
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
         interface: interface.split('application')[1].slice(0, -3),
@@ -199,6 +223,7 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     const expressApp = await express(application)
+    fs.writeFileSync('./server.js', expressApp)
     return expressApp
 }
 

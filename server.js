@@ -1,7 +1,7 @@
 const node = { process };
-const npm = {};
-
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+    const npm = {};
+    
+    const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
 const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
 const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
 const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
@@ -15,9 +15,9 @@ if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
 for (const name of dependencies) {
   let lib = null;
   try {
-    lib = require(name);
+      lib = require(name);
   } catch {
-    continue;
+      continue;
   }
   if (internals.includes(name)) {
     node[name] = lib;
@@ -35,8 +35,9 @@ node.fsp = node.fs.promises;
 Object.freeze(node)
 Object.freeze(npm)
 const { fs } = node
-const { express, morgan } = npm 
+const { express, morgan, cors } = npm 
 const app = express();
+app.use(cors())
 app.use(morgan('dev'));
 app.use(express.json())
 app.use(express.urlencoded({
@@ -74,6 +75,49 @@ modules.test.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/appli
 Object.freeze(modules)
 
 
+app.get('/api/connection', (req, res) => res.send(`
+    module.exports = axios => {
+    api.ddsa = {}
+    api.user = {}
+    api.user.test = {}
+    api.user.test.router = {}
+    api.app = {}
+    api.app.get = async params => (await axios.get(\`/api/app?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.app.post = async params => (await axios.post("/api/app", params)).data
+    api.tes2 = {}
+    api.tes2.get = async params => (await axios.get(\`/api/tes2?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.tes2.post = async params => (await axios.post("/api/tes2", params)).data
+    api.test = {}
+    api.test.get = async params => (await axios.get(\`/api/test?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.test.post = async params => (await axios.post("/api/test", params)).data
+    api.test3 = {}
+    api.test3.get = async params => (await axios.get(\`/api/test3?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.test3.post = async params => (await axios.post("/api/test3", params)).data
+    api.test4 = {}
+    api.test4.get = async params => (await axios.get(\`/api/test4?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.test4.post = async params => (await axios.post("/api/test4", params)).data
+    api.test5 = {}
+    api.test5.get = async params => (await axios.get(\`/api/test5?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.test5.post = async params => (await axios.post("/api/test5", params)).data
+    api.user.getCity = {}
+    api.user.getCity.get = async params => (await axios.get(\`/api/user/getCity?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.user.getCity.post = async params => (await axios.post("/api/user/getCity", params)).data
+    api.user.getProduct = {}
+    api.user.getProduct.get = async params => (await axios.get(\`/api/user/getProduct?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.user.getProduct.post = async params => (await axios.post("/api/user/getProduct", params)).data
+    api.user.test.router.router = {}
+    api.user.test.router.router.get = async params => (await axios.get(\`/api/user/test/router/router?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.user.test.router.router.post = async params => (await axios.post("/api/user/test/router/router", params)).data
+    api.user.test.test = {}
+    api.user.test.test.get = async params => (await axios.get(\`/api/user/test/test?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.user.test.test.post = async params => (await axios.post("/api/user/test/test", params)).data
+    api.user.test.test2 = {}
+    api.user.test.test2.get = async params => (await axios.get(\`/api/user/test/test2?$\{Object.entries(params).map(([key, value]) => \`$\{key}=$\{value}\`).join("&")})
+    api.user.test.test2.post = async params => (await axios.post("/api/user/test/test2", params)).data
+    return Object.freeze(api)
+}
+`))
+    
 app.post("/api/app", async (req, res) => {
     const { body } = req
     res.send(await api.app.post(body))
