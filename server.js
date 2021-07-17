@@ -1,9 +1,43 @@
-const express = require("express");
-const morgan = require("morgan");
-const fs = require('fs');
-const Thread = require("funthreads")
+const node = { process };
+const npm = {};
+
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+const pkg = require(process.cwd() + '/package.json');
+const dependencies = [...internals];
+if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+for (const name of dependencies) {
+  let lib = null;
+  try {
+    lib = require(name);
+  } catch {
+    continue;
+  }
+  if (internals.includes(name)) {
+    node[name] = lib;
+    continue;
+  }
+  npm[name] = lib;
+}
+
+node.childProcess = node['child_process'];
+node.StringDecoder = node['string_decoder'];
+node.perfHooks = node['perf_hooks'];
+node.asyncHooks = node['async_hooks'];
+node.worker = node['worker_threads'];
+node.fsp = node.fs.promises;  
+Object.freeze(node)
+Object.freeze(npm)
+const { fs } = node
+const { express, morgan } = npm 
 const app = express();
-app.use(morgan(`dev`));
+app.use(morgan('dev'));
 app.use(express.json())
 app.use(express.urlencoded({
     extended: false
@@ -43,79 +77,66 @@ Object.freeze(modules)
 app.post("/api/app", async (req, res) => {
     const { body } = req
     res.send(await api.app.post(body))
-    Thread.run(async () => await api.app.post(body)).then(res.send)
 })
             
 app.get("/api/app", async (req, res) => {
     const { query } = req
     res.send(await api.app.get(query))
-    Thread.run(async () => await api.app.get(query)).then(res.send)
 })
             
 app.post("/api/tes2", async (req, res) => {
     const { body } = req
     res.send(await api.tes2.post(body))
-    Thread.run(async () => await api.tes2.post(body)).then(res.send)
 })
             
 app.get("/api/test", async (req, res) => {
     const { query } = req
     res.send(await api.test.get(query))
-    Thread.run(async () => await api.test.get(query)).then(res.send)
 })
             
 app.get("/api/test3", async (req, res) => {
     const { query } = req
     res.send(await api.test3.get(query))
-    Thread.run(async () => await api.test3.get(query)).then(res.send)
 })
             
 app.get("/api/test4", async (req, res) => {
     const { query } = req
     res.send(await api.test4.get(query))
-    Thread.run(async () => await api.test4.get(query)).then(res.send)
 })
             
 app.get("/api/test5", async (req, res) => {
     const { query } = req
     res.send(await api.test5.get(query))
-    Thread.run(async () => await api.test5.get(query)).then(res.send)
 })
             
 app.get("/api/user/getCity", async (req, res) => {
     const { query } = req
     res.send(await api.user.getCity.get(query))
-    Thread.run(async () => await api.user.getCity.get(query)).then(res.send)
 })
             
 app.post("/api/user/getProduct", async (req, res) => {
     const { body } = req
     res.send(await api.user.getProduct.post(body))
-    Thread.run(async () => await api.user.getProduct.post(body)).then(res.send)
 })
             
 app.get("/api/user/getProduct", async (req, res) => {
     const { query } = req
     res.send(await api.user.getProduct.get(query))
-    Thread.run(async () => await api.user.getProduct.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/router/router", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.router.router.get(query))
-    Thread.run(async () => await api.user.test.router.router.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/test", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.test.get(query))
-    Thread.run(async () => await api.user.test.test.get(query)).then(res.send)
 })
             
 app.get("/api/user/test/test2", async (req, res) => {
     const { query } = req
     res.send(await api.user.test.test2.get(query))
-    Thread.run(async () => await api.user.test.test2.get(query)).then(res.send)
 })
             
 app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))

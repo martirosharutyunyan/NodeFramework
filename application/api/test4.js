@@ -1,3 +1,6 @@
 ({
-    get: async({ name }) => name + ''
+    get: async ({ name }) => {
+        console.log(name)
+        return npm.bcrypt.hash('sad', 10);
+    }
 })

@@ -1,40 +1,7 @@
 const fs = require('fs');
-const { readdirSync } = fs
 const path = require('path');
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const node = { process };
-const npm = {};
-const methods = ['get', 'post', 'delete', 'put']
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
-const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
-const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
-const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
-const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
-const internals = [...system, ...tools, ...streams, ...async, ...network];
 
-const pkg = require(process.cwd() + '/package.json');
-const dependencies = [...internals];
-if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
-
-for (const name of dependencies) {
-    let lib = null;
-    try {
-        lib = require(name);
-    } catch {
-        continue;
-    }
-    if (internals.includes(name)) {
-        node[name] = lib;
-        continue;
-    }
-}
-
-node.childProcess = node['child_process'];
-node.StringDecoder = node['string_decoder'];
-node.perfHooks = node['perf_hooks'];
-node.asyncHooks = node['async_hooks'];
-node.worker = node['worker_threads'];
-node.fsp = node.fs.promises;
+const methods = ['get', 'post', 'put', 'delete']
 
 const flatten = lists => {
     return lists.reduce((a, b) => a.concat(b), []);
@@ -129,12 +96,46 @@ Object.freeze(modules)
 const express = async application => {
     const data = await api()
     const modul = await modules()
-    return `const express = require("express");
-const morgan = require("morgan");
-const fs = require('fs');
-const Thread = require("funthreads")
+    return `const node = { process };
+const npm = {};
+
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+const pkg = require(process.cwd() + '/package.json');
+const dependencies = [...internals];
+if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+for (const name of dependencies) {
+  let lib = null;
+  try {
+    lib = require(name);
+  } catch {
+    continue;
+  }
+  if (internals.includes(name)) {
+    node[name] = lib;
+    continue;
+  }
+  npm[name] = lib;
+}
+
+node.childProcess = node['child_process'];
+node.StringDecoder = node['string_decoder'];
+node.perfHooks = node['perf_hooks'];
+node.asyncHooks = node['async_hooks'];
+node.worker = node['worker_threads'];
+node.fsp = node.fs.promises;  
+Object.freeze(node)
+Object.freeze(npm)
+const { fs } = node
+const { express, morgan } = npm 
 const app = express();
-app.use(morgan(\`dev\`));
+app.use(morgan('dev'));
 app.use(express.json())
 app.use(express.urlencoded({
     extended: false
@@ -193,14 +194,12 @@ const createServer = async () => {
 app.${request}("${interface}", async (req, res) => {
     const { ${body} } = req
     res.send(await ${callback}.${request}(${body}))
-    Thread.run(async () => await ${callback}.${request}(${body})).then(res.send)
 })
             `
         })
     })
     const expressApp = await express(application)
-    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
     return expressApp
 }
-createServer()
 
+createServer().then(res => eval(res))
