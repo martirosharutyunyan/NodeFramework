@@ -227,7 +227,7 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     const expressApp = await express(application)
-    fs.writeFileSync('./server.js', expressApp)
+    // fs.writeFileSync('./server.js', expressApp)
     return expressApp
 }
 
