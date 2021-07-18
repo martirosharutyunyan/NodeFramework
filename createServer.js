@@ -162,7 +162,7 @@ const frontConnection = async () => {
     router.map(({ path, interface }) => {
         str += `
     ${interface} = {}
-    ${interface}.get = async params => (await axios.get(\\\`${path}?$\\\{Object.entries(params).map(([key, value]) => \\\`$\\\{key}=$\\\{value}\\\`)})
+    ${interface}.get = async params => (await axios.get(\\\`${path}?$\\\{parse(params)}\\\`)).data
     ${interface}.post = async params => (await axios.post("${path}", params)).data`
     })
     return `
@@ -216,8 +216,12 @@ app.get('/api/connection', (req, res) => res.send(\`${front}\`))
             const body = request === 'get' ? 'query' : 'body'
             application += `
 app.${request}("${interface}", async (req, res) => {
-    const { ${body} } = req
-    res.send(await ${callback}.${request}(${body}))
+    try {
+        const { ${body} } = req
+        res.send(await ${callback}.${request}(${body}))
+    } catch(e) {
+        res.send(new Error(e))
+    }
 })
             `
         })
