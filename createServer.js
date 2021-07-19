@@ -1,7 +1,39 @@
 const fs = require('fs');
 const path = require('path');
+const methods = ['get', 'post']
+const { exec } = require('child_process')
 
-const methods = ['get', 'post', 'put', 'delete']
+const getGlobalVariables = () => {
+    const node = { process };
+    const npm = {};
+    const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+    const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+    const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+    const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+    const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+    const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+    const pkg = require(process.cwd() + '/package.json');
+    const dependencies = [...internals];
+    if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+    for (const name of dependencies) {
+      let lib = null;
+      try {
+          lib = require(name);
+      } catch {
+          continue;
+      }
+      if (internals.includes(name)) {
+        node[name] = lib;
+        continue;
+      }
+      npm[name] = lib;
+    }
+    Object.freeze(node)
+    Object.freeze(npm)
+    return { node, npm };
+}
 
 const flatten = lists => {
     return lists.reduce((a, b) => a.concat(b), []);
@@ -18,7 +50,7 @@ const getDirectoriesRecursive = srcpath => {
 }
 
 const apiPath = process.cwd() + '\\application\\api'
-const modulPath = process.cwd() + '\\application\\modules'
+const modulPath = process.cwd() + '\\application\\services'
 
 const folders = path => getDirectoriesRecursive(path).filter(e => e !== path)
 
@@ -52,7 +84,13 @@ const walk = (dir, done) => {
 const getFiles = async path => new Promise(res => {
     walk(path, (err, result) => {
         if(err) console.log(err)
-        const paths = result.map(e => e.split("\\").join('/'))
+        const paths = result.map(e => e.split("\\").join('/')).filter(interface => {
+            if(interface.includes('.map')) {
+                fs.promises.unlink(interface).catch(() => {}) 
+                return false;
+            }
+            return true;
+        })
         res(paths)
     })
 })
@@ -74,10 +112,10 @@ ${str}
 Object.freeze(api)
 `
 }
-const modules = async () => {
+const services = async () => {
     let str = ''
     const data = await getFiles(modulPath)
-    const folder = folders(modulPath).filter(e => e.includes('application\\modules'))
+    const folder = folders(modulPath).filter(e => e.includes('application\\services'))
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
     folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
@@ -86,19 +124,19 @@ const modules = async () => {
         str += `\n${interface} = eval(fs.readFileSync('${path}', 'utf8'))`
     })
     return `
-const modules = {}
+const services = {}
 ${str}
-Object.freeze(modules)
+Object.freeze(services)
 `
 }
 
 const express = async application => {
     const data = await api()
-    const modul = await modules()
+    const modul = await services()
     return `const node = { process };
-    const npm = {};
+const npm = {};
     
-    const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
 const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
 const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
 const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
@@ -123,12 +161,7 @@ for (const name of dependencies) {
   npm[name] = lib;
 }
 
-node.childProcess = node['child_process'];
-node.StringDecoder = node['string_decoder'];
-node.perfHooks = node['perf_hooks'];
-node.asyncHooks = node['async_hooks'];
-node.worker = node['worker_threads'];
-node.fsp = node.fs.promises;  
+
 Object.freeze(node)
 Object.freeze(npm)
 const { fs } = node
@@ -227,8 +260,78 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     const expressApp = await express(application)
-    // fs.writeFileSync('./server.js', expressApp)
+    console.log(expressApp)
+    fs.writeFileSync('./express.js', expressApp)
     return expressApp
 }
 
 createServer().then(res => eval(res))
+
+
+const globalts = () => {
+    let application = 'import { Database } from "metasql"\n'
+    const { node, npm } = getGlobalVariables()
+    let nodeStr = `declare const node: {`
+    let npmStr = `declare const npm: {`
+    // let db
+    const dependencies = [...Object.keys(node), ...Object.keys(npm)].forEach(modul => {
+        if(modul === 'process') return ;
+        application += `import ${modul} from "${modul}"\n`
+    })
+    Object.keys(node).forEach(modul => {
+        nodeStr += `\n    ${modul}: typeof ${modul}`
+    })
+    nodeStr += '\n}'
+    Object.keys(npm).forEach(modul => {
+        npmStr += `\n    ${modul}: typeof ${modul}`
+    })
+    npmStr += '\n}'
+    const app = `${application}
+${nodeStr}
+${npmStr}
+declare const db: Database`;
+    fs.writeFileSync('./global.d.ts', app)
+};
+
+globalts()
+
+const createGlobalJs = async () => {
+    const apiStr = await api()
+    const servicesStr = await services()
+    const App = `const node = { process };
+const npm = {};
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+const pkg = require(process.cwd() + '/package.json');
+const dependencies = [...internals];
+if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+for (const name of dependencies) {
+    let lib = null;
+    try {
+        lib = require(name);
+    } catch {
+        continue;
+    }
+    if (internals.includes(name)) {
+    node[name] = lib;
+    continue;
+    }
+    npm[name] = lib;
+}
+Object.freeze(node)
+Object.freeze(npm)
+const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
+const { Database } = require('metasql');
+const db = new Database(config.db)
+module.exports = { node, api, npm, db, serivces }
+`
+    fs.writeFileSync(process.cwd() + '/global.js', `${apiStr}\n${servicesStr}\n${App}`)
+};
+
+createGlobalJs()

@@ -1,3 +1,5 @@
+import { db } from "../../../../global";
+
 ({
     get: async ({ name }) => {
         console.log(db)
