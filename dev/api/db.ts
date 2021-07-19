@@ -1,5 +1,3 @@
-import { db, node, npm } from "../../global"
-
 ({
     post: async ({ name }) => {
         const { fs } = node

@@ -35,44 +35,47 @@ import funthreads from "funthreads"
 import metasql from "metasql"
 import morgan from "morgan"
 
-declare const node: {
-    process: typeof process
-    util: typeof util
-    child_process: typeof child_process
-    worker_threads: typeof worker_threads
-    os: typeof os
-    v8: typeof v8
-    vm: typeof vm
-    path: typeof path
-    url: typeof url
-    string_decoder: typeof string_decoder
-    querystring: typeof querystring
-    assert: typeof assert
-    stream: typeof stream
-    fs: typeof fs
-    crypto: typeof crypto
-    zlib: typeof zlib
-    readline: typeof readline
-    perf_hooks: typeof perf_hooks
-    async_hooks: typeof async_hooks
-    timers: typeof timers
-    events: typeof events
-    dns: typeof dns
-    net: typeof net
-    tls: typeof tls
-    http: typeof http
-    https: typeof https
-    http2: typeof http2
-    dgram: typeof dgram
+
+declare global {
+    const node: {
+        process: typeof process
+        util: typeof util
+        child_process: typeof child_process
+        worker_threads: typeof worker_threads
+        os: typeof os
+        v8: typeof v8
+        vm: typeof vm
+        path: typeof path
+        url: typeof url
+        string_decoder: typeof string_decoder
+        querystring: typeof querystring
+        assert: typeof assert
+        stream: typeof stream
+        fs: typeof fs
+        crypto: typeof crypto
+        zlib: typeof zlib
+        readline: typeof readline
+        perf_hooks: typeof perf_hooks
+        async_hooks: typeof async_hooks
+        timers: typeof timers
+        events: typeof events
+        dns: typeof dns
+        net: typeof net
+        tls: typeof tls
+        http: typeof http
+        https: typeof https
+        http2: typeof http2
+        dgram: typeof dgram
+    }
+    const npm: {
+        axios: typeof axios
+        bcrypt: typeof bcrypt
+        concurrently: typeof concurrently
+        cors: typeof cors
+        express: typeof express
+        funthreads: typeof funthreads
+        metasql: typeof metasql
+        morgan: typeof morgan
+    }
+    const db: Database
 }
-declare const npm: {
-    axios: typeof axios
-    bcrypt: typeof bcrypt
-    concurrently: typeof concurrently
-    cors: typeof cors
-    express: typeof express
-    funthreads: typeof funthreads
-    metasql: typeof metasql
-    morgan: typeof morgan
-}
-declare const db: Database

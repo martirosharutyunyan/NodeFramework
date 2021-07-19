@@ -231,8 +231,39 @@ const frontConnection = async () => {
 // }
                     
 // createServer2()
-                    
+            
+
+const globalts = async () => {
+    const apiStr = await api()
+    let application = 'import { Database } from "metasql"\n'
+    const { node, npm } = getGlobalVariables()
+    const dependencies = [...Object.keys(node), ...Object.keys(npm)].forEach(modul => {
+        if(modul === 'process') return ;
+        application += `import ${modul} from "${modul}"\n`
+    })
+    application += `declare global {\n`
+    let nodeStr = '    const node: {'
+    let npmStr = '    const npm: {'
+    // let apiStr = '    const api: '
+    Object.keys(node).forEach(modul => {
+        nodeStr += `\n        ${modul}: typeof ${modul}`
+    })
+    nodeStr += '\n    }'
+    Object.keys(npm).forEach(modul => {
+        npmStr += `\n        ${modul}: typeof ${modul}`
+    })
+    npmStr += '\n    }'
+    const app = `${application}
+${nodeStr}
+${npmStr}
+    const db: Database
+}`;
+    fs.writeFileSync('./global.d.ts', app)
+};
+
+
 const createServer = async () => {
+    globalts()
     const data = await getFiles(apiPath)
     const front = await frontConnection()
     let application = `
@@ -260,78 +291,10 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     const expressApp = await express(application)
-    console.log(expressApp)
-    fs.writeFileSync('./express.js', expressApp)
+    // fs.writeFileSync('./express.js', expressApp)
     return expressApp
 }
 
 createServer().then(res => eval(res))
 
 
-const globalts = () => {
-    let application = 'import { Database } from "metasql"\n'
-    const { node, npm } = getGlobalVariables()
-    let nodeStr = `declare const node: {`
-    let npmStr = `declare const npm: {`
-    // let db
-    const dependencies = [...Object.keys(node), ...Object.keys(npm)].forEach(modul => {
-        if(modul === 'process') return ;
-        application += `import ${modul} from "${modul}"\n`
-    })
-    Object.keys(node).forEach(modul => {
-        nodeStr += `\n    ${modul}: typeof ${modul}`
-    })
-    nodeStr += '\n}'
-    Object.keys(npm).forEach(modul => {
-        npmStr += `\n    ${modul}: typeof ${modul}`
-    })
-    npmStr += '\n}'
-    const app = `${application}
-${nodeStr}
-${npmStr}
-declare const db: Database`;
-    fs.writeFileSync('./global.d.ts', app)
-};
-
-globalts()
-
-const createGlobalJs = async () => {
-    const apiStr = await api()
-    const servicesStr = await services()
-    const App = `const node = { process };
-const npm = {};
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
-const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
-const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
-const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
-const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
-const internals = [...system, ...tools, ...streams, ...async, ...network];
-
-const pkg = require(process.cwd() + '/package.json');
-const dependencies = [...internals];
-if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
-
-for (const name of dependencies) {
-    let lib = null;
-    try {
-        lib = require(name);
-    } catch {
-        continue;
-    }
-    if (internals.includes(name)) {
-    node[name] = lib;
-    continue;
-    }
-    npm[name] = lib;
-}
-Object.freeze(node)
-Object.freeze(npm)
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const { Database } = require('metasql');
-const db = new Database(config.db)
-module.exports = { node, api, npm, db, serivces }
-`
-    fs.writeFileSync(process.cwd() + '/global.js', `${apiStr}\n${servicesStr}\n${App}`)
-};
-
-createGlobalJs()

@@ -2,10 +2,10 @@
   "name": "NodeFramework",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "concurrently \"node createServer.js\"  \"nodemon server.js\"",
-    "dev": "tsc && nodemon server.js",
+    "dev": "nodemon server.js",
     "build": "tsc"
   },
   "keywords": [],
