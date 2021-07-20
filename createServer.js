@@ -235,8 +235,11 @@ const frontConnection = async () => {
 
 const globalts = async () => {
     const apiStr = await api()
+    const servicesStr = await services()
     let application = 'import { Database } from "metasql"\n'
     const { node, npm } = getGlobalVariables()
+    const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
+        .split('{}').join('{ get: Function, post: Function }')
     const dependencies = [...Object.keys(node), ...Object.keys(npm)].forEach(modul => {
         if(modul === 'process') return ;
         application += `import ${modul} from "${modul}"\n`
@@ -244,7 +247,8 @@ const globalts = async () => {
     application += `declare global {\n`
     let nodeStr = '    const node: {'
     let npmStr = '    const npm: {'
-    // let apiStr = '    const api: '
+    let apiString = `    const api: ${getType(apiStr)}`
+    let servicesString = `    const services: ${getType(servicesStr)}`
     Object.keys(node).forEach(modul => {
         nodeStr += `\n        ${modul}: typeof ${modul}`
     })
@@ -256,7 +260,10 @@ const globalts = async () => {
     const app = `${application}
 ${nodeStr}
 ${npmStr}
+${apiString}
+${servicesString}
     const db: Database
+    
 }`;
     fs.writeFileSync('./global.d.ts', app)
 };
@@ -291,7 +298,6 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     const expressApp = await express(application)
-    // fs.writeFileSync('./express.js', expressApp)
     return expressApp
 }
 

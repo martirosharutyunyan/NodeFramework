@@ -5,6 +5,7 @@
     },
 
     get: async ({ name }) => {
-        return name
+        console.log('ok')
+        return await services.test.test.test.get({ name })
     }
 })

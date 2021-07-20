@@ -37,11 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 ({
     get: function (_a) {
-        var city = _a.city;
+        var name = _a.name;
         return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_b) {
-                console.log({ city: city });
-                return [2, city];
+                console.log({ name: name });
+                return [2, name];
             });
         });
     }

@@ -4,7 +4,7 @@
         return name
     },
 
-    get: async ({a}) => {
+    get: async ({ a} ) => {
         console.log(a)
         return a + 2
     }

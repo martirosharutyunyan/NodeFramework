@@ -1,6 +1,6 @@
 ({
     get: async ({ name }) => {
-        console.log(db)
-        return await db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" });
+        return api.user.getCity.get({ name })
+        // return await db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" });
     }
 })

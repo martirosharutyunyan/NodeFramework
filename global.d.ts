@@ -34,9 +34,8 @@ import express from "express"
 import funthreads from "funthreads"
 import metasql from "metasql"
 import morgan from "morgan"
-
-
 declare global {
+
     const node: {
         process: typeof process
         util: typeof util
@@ -77,5 +76,21 @@ declare global {
         metasql: typeof metasql
         morgan: typeof morgan
     }
+    const api: {
+        user: {
+                getCity: { get: Function, post: Function },
+                getProduct: { get: Function, post: Function }
+        },
+        app: { get: Function, post: Function },
+        db: { get: Function, post: Function }
+}
+    const services: {
+        test: {
+                test: {
+                        test: { get: Function, post: Function }
+                }
+        }
+}
     const db: Database
+    
 }

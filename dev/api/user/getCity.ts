@@ -1,6 +1,6 @@
 ({
-    get: async ({ city }) => {
-        console.log({ city })
-        return city;
+    get: async ({ name }) => {
+        console.log({ name })
+        return name;
     }
 })

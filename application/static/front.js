@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,34 +35,41 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
-({
-    post: function (_a) {
-        var name = _a.name;
-        return __awaiter(_this, void 0, void 0, function () {
-            var product;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4, db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" })];
-                    case 1:
-                        product = _b.sent();
-                        return [2, product];
-                }
-            });
-        });
-    },
-    get: function (_a) {
-        var name = _a.name;
-        return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        console.log('ok');
-                        return [4, services.test.test.test.get({ name: name })];
-                    case 1: return [2, _b.sent()];
-                }
-            });
-        });
+Object.defineProperty(exports, "__esModule", { value: true });
+var ax = require('axios');
+var parse = function (params) { return Object.entries(params).map(function (_a) {
+    var key = _a[0], value = _a[1];
+    return key + "=" + value;
+}).join('&'); };
+var api = {};
+var getApi = function () { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+    switch (_a.label) {
+        case 0: return [4, ax.get('http://localhost:8888/api/connection')];
+        case 1: return [2, (_a.sent()).data];
     }
-});
-//# sourceMappingURL=getProduct.js.map
+}); }); };
+new Promise(function (res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, _b, _c, _d, _e, _f, _g;
+    return __generator(this, function (_h) {
+        switch (_h.label) {
+            case 0:
+                _b = (_a = console).log;
+                _c = eval;
+                return [4, getApi()];
+            case 1:
+                _b.apply(_a, [_c.apply(void 0, [(_h.sent())])]);
+                _d = res;
+                _e = eval;
+                return [4, getApi()];
+            case 2:
+                _d.apply(void 0, [_e.apply(void 0, [_h.sent()])(ax.create({ baseURL: 'http://localhost:8888' }))]);
+                _g = (_f = console).log;
+                return [4, getApi()];
+            case 3:
+                _g.apply(_f, [_h.sent()]);
+                return [2];
+        }
+    });
+}); }).then(function (res) { return window.api = res; });
+exports.default = api;
+//# sourceMappingURL=front.js.map

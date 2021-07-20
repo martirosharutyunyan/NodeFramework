@@ -40,12 +40,7 @@ var _this = this;
         var name = _a.name;
         return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        console.log(db);
-                        return [4, db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" })];
-                    case 1: return [2, _b.sent()];
-                }
+                return [2, api.user.getCity.get({ name: name })];
             });
         });
     }
