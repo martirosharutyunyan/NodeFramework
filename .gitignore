@@ -1,2 +1,3 @@
 /node_modules
-/application/config/
+/application
+/dev/config
