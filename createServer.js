@@ -270,7 +270,6 @@ ${servicesString}
 
 
 const createServer = async () => {
-    globalts()
     const data = await getFiles(apiPath)
     const front = await frontConnection()
     let application = `
@@ -297,6 +296,7 @@ app.${request}("${interface}", async (req, res) => {
             `
         })
     })
+    globalts()
     const expressApp = await express(application)
     return expressApp
 }

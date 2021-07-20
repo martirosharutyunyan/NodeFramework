@@ -87,7 +87,8 @@ declare global {
     const services: {
         test: {
                 test: {
-                        test: { get: Function, post: Function }
+                        test: { get: Function, post: Function },
+                        test2: { get: Function, post: Function }
                 }
         }
 }

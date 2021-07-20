@@ -36,20 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 ({
-    post: function (_a) {
-        var name = _a.name;
-        return __awaiter(_this, void 0, void 0, function () {
-            var product;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4, db.select('products', ['id', 'productNameHY'], { codeOfProduct: "codeOfProduct" })];
-                    case 1:
-                        product = _b.sent();
-                        return [2, product];
-                }
-            });
-        });
-    },
     get: function (_a) {
         var name = _a.name;
         return __awaiter(_this, void 0, void 0, function () {
@@ -59,4 +45,4 @@ var _this = this;
         });
     }
 });
-//# sourceMappingURL=getProduct.js.map
+//# sourceMappingURL=test2.js.map
