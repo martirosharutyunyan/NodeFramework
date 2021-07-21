@@ -17,6 +17,7 @@
     "concurrently": "^6.2.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "fastify": "^3.19.1",
     "funthreads": "^1.0.1",
     "metasql": "^1.1.5",
     "morgan": "^1.10.0"

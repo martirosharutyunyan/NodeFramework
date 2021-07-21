@@ -130,7 +130,7 @@ Object.freeze(services)
 `
 }
 
-const express = async application => {
+const fastify = async application => {
     const data = await api()
     const modul = await services()
     return `const node = { process };
@@ -165,21 +165,23 @@ for (const name of dependencies) {
 Object.freeze(node)
 Object.freeze(npm)
 const { fs } = node
-const { express, morgan, cors } = npm 
-const app = express();
-app.use(cors())
-app.use(morgan('dev'));
-app.use(express.json())
-app.use(express.urlencoded({
-    extended: false
-}));
+const { morgan, cors } = npm 
+const fastify = require('fastify')({ logger: true })
 const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 const { Database } = require('metasql');
 const db = new Database(config.db)
 ${data}
 ${modul}
 ${application}
-app.listen(config.port, () => console.log("server in running on port http://localhost:" + config.port))`
+const start = async () => {
+    try {
+      await fastify.listen(config.port)
+    } catch (err) {
+      fastify.log.error(err)
+      process.exit(1)
+    }
+  }
+start()`
 }
 
 
@@ -273,7 +275,7 @@ const createServer = async () => {
     const data = await getFiles(apiPath)
     const front = await frontConnection()
     let application = `
-app.get('/api/connection', (req, res) => res.send(\`${front}\`))
+fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     `
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
@@ -285,7 +287,7 @@ app.get('/api/connection', (req, res) => res.send(\`${front}\`))
             if(!methods.includes(request)) return 
             const body = request === 'get' ? 'query' : 'body'
             application += `
-app.${request}("${interface}", async (req, res) => {
+fastify.${request}("${interface}", async (req, res) => {
     try {
         const { ${body} } = req
         res.send(await ${callback}.${request}(${body}))
@@ -297,10 +299,10 @@ app.${request}("${interface}", async (req, res) => {
         })
     })
     globalts()
-    const expressApp = await express(application)
-    return expressApp
+    const fastifyApp = await fastify(application)
+    fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)
 }
 
-createServer().then(res => eval(res))
+createServer()
 
 
