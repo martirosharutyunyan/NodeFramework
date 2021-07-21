@@ -31,6 +31,7 @@ import bcrypt from "bcrypt"
 import concurrently from "concurrently"
 import cors from "cors"
 import express from "express"
+import fastify from "fastify"
 import funthreads from "funthreads"
 import metasql from "metasql"
 import morgan from "morgan"
@@ -72,6 +73,7 @@ declare global {
         concurrently: typeof concurrently
         cors: typeof cors
         express: typeof express
+        fastify: typeof fastify
         funthreads: typeof funthreads
         metasql: typeof metasql
         morgan: typeof morgan
