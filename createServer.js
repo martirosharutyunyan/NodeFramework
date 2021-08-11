@@ -2,12 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm')
 
-const methods = ['get', 'post']
+const methods = ['get', 'post', 'delete', 'put', 'head', 'connect', 'trace']
+
 function getScript(string) {
-    return new 
+    return new vm.Script().runInThisContext()
 }
 
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 
 const getGlobalVariables = () => {
     const node = { process };
@@ -110,7 +111,7 @@ const api = async () => {
         str += `\n${path} = {}` 
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = eval(fs.readFileSync('${path}', 'utf8'))`
+        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
     })
     return `
 const api = {}
@@ -127,7 +128,7 @@ const services = async () => {
         str += `\n${path} = {}` 
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = eval(fs.readFileSync('${path}', 'utf8'))`
+        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
     })
     return `
 const services = {}
@@ -170,12 +171,19 @@ for (const name of dependencies) {
 
 Object.freeze(node)
 Object.freeze(npm)
-const { fs } = node
+const { fs, vm } = node
 const { morgan, cors } = npm 
+
+function getScript(string) {
+    return new vm.Script().runInThisContext()
+}
+
 const fastify = require('fastify')({ logger: true })
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 const { Database } = require('metasql');
 const db = new Database(config.db)
+
+
 ${data}
 ${modul}
 ${application}
@@ -211,35 +219,7 @@ const frontConnection = async () => {
     return Object.freeze(api)
 }
 `
-}
-
-
-
-// const createServer2 = async () => {
-//     const data = await getFiles(apiPath)
-//     const routers = data.map(interface => {
-//         return { rout: eval(fs.readFileSync(interface, 'utf8')), interface:interface.split('application')[1].slice(0, -3) }
-//     })
-//     let application = ''
-//     routers.map(({ rout, interface }) => {
-//         Object.keys(rout).forEach(request => {
-//             if(!methods.includes(request)) return 
-//             const body = request === 'get' ? 'query' : 'body'
-//             const func = `await (${rout[request].toString()})(${body})`;
-//             application += `
-// app.${request}("${interface}", async (req, res) => {
-//     const { ${body} } = req
-//     res.send(${func})
-// })`
-//        })
-//    })
-//    const expressApp = await express(application)
-//    fs.writeFileSync(process.cwd() + '/server.js', expressApp, err => {}) 
-//    return expressApp
-// }
-                    
-// createServer2()
-            
+}            
 
 const globalts = async () => {
     const apiStr = await api()
@@ -288,7 +268,7 @@ fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
         interface: interface.split('application')[1].slice(0, -3),
-        rout: eval(fs.readFileSync(interface, 'utf8'))
+        rout: getScript(fs.readFileSync(interface, 'utf8'))
     }))
     routers.forEach(({ rout, interface, callback }) => {
         Object.keys(rout).forEach(request => {
