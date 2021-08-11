@@ -255,7 +255,7 @@ ${confStr}
     const db: Database
     
 }`;
-    fs.writeFileSync('./global.d.ts', app)
+    fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };
 
 
