@@ -1,3 +1,6 @@
 {
-    
+    "watch": ["dev"],
+    "ext": "ts",
+    "exec": "npm run server"
 }
+  
