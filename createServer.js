@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm')
+
 const methods = ['get', 'post']
+function getScript(string) {
+    return new 
+}
+
 const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
 
 const getGlobalVariables = () => {
