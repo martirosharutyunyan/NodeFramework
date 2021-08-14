@@ -29,20 +29,27 @@ for (const name of dependencies) {
 
 Object.freeze(node)
 Object.freeze(npm)
-const { fs } = node
-const { morgan, cors } = npm 
+const { fs, vm } = node
+const { typeorm } = npm 
+
+function getScript(string) {
+    return new vm.Script(string).runInThisContext()
+}
+
 const fastify = require('fastify')({ logger: true })
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const { Database } = require('metasql');
-const db = new Database(config.db)
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
+const { createConnection } = typeorm
+createConnection(config.db).then(() => {
+
+    
 
 const api = {}
 
 api.user = {}
-api.app = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
-api.db = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/db.js', 'utf8'))
-api.user.getCity = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
-api.user.getProduct = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
+api.app = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
+api.db = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/db.js', 'utf8'))
+api.user.getCity = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
+api.user.getProduct = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
 Object.freeze(api)
 
 
@@ -50,8 +57,8 @@ const services = {}
 
 services.test = {}
 services.test.test = {}
-services.test.test.test = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test.js', 'utf8'))
-services.test.test.test2 = eval(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test2.js', 'utf8'))
+services.test.test.test = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test.js', 'utf8'))
+services.test.test.test2 = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test2.js', 'utf8'))
 Object.freeze(services)
 
 
@@ -76,8 +83,7 @@ fastify.get('/api/connection', (req, res) => res.send(`
     
 fastify.post("/api/app", async (req, res) => {
     try {
-        const { body } = req
-        res.send(await api.app.post(body))
+        res.send(await api.app.post({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -85,8 +91,7 @@ fastify.post("/api/app", async (req, res) => {
             
 fastify.get("/api/app", async (req, res) => {
     try {
-        const { query } = req
-        res.send(await api.app.get(query))
+        res.send(await api.app.get({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -94,8 +99,7 @@ fastify.get("/api/app", async (req, res) => {
             
 fastify.post("/api/db", async (req, res) => {
     try {
-        const { body } = req
-        res.send(await api.db.post(body))
+        res.send(await api.db.post({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -103,8 +107,7 @@ fastify.post("/api/db", async (req, res) => {
             
 fastify.get("/api/db", async (req, res) => {
     try {
-        const { query } = req
-        res.send(await api.db.get(query))
+        res.send(await api.db.get({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -112,8 +115,7 @@ fastify.get("/api/db", async (req, res) => {
             
 fastify.get("/api/user/getCity", async (req, res) => {
     try {
-        const { query } = req
-        res.send(await api.user.getCity.get(query))
+        res.send(await api.user.getCity.get({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -121,8 +123,7 @@ fastify.get("/api/user/getCity", async (req, res) => {
             
 fastify.post("/api/user/getProduct", async (req, res) => {
     try {
-        const { body } = req
-        res.send(await api.user.getProduct.post(body))
+        res.send(await api.user.getProduct.post({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -130,8 +131,7 @@ fastify.post("/api/user/getProduct", async (req, res) => {
             
 fastify.get("/api/user/getProduct", async (req, res) => {
     try {
-        const { query } = req
-        res.send(await api.user.getProduct.get(query))
+        res.send(await api.user.getProduct.get({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -141,8 +141,11 @@ const start = async () => {
     try {
       await fastify.listen(config.port)
     } catch (err) {
-      fastify.log.error(err)
+        fastify.log.error(err)
       process.exit(1)
     }
-  }
+}
+
+Object.assign(global, { node, npm, services, api })
 start()
+})

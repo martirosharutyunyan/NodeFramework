@@ -1,3 +1,5 @@
+clear
 git add .
-git commit --allow-empty-message -m ''
+read -p "Enter your commit name: " COMMIT
+git commit -m "${COMMIT}"
 git push

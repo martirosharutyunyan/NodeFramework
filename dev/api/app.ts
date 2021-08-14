@@ -1,11 +1,10 @@
 ({
     post: async ({ name }) => {
         const { path, fs } = node
-        return name
+        return name + name
     },
 
-    get: async ({ a }) => {
-        const { bcrypt } = npm
-        return a + 2
+    get: async ({ name }) => {
+        return services.test.test.test.get({ name })
     }
 })

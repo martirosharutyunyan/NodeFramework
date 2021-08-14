@@ -1,4 +1,3 @@
-import { Database } from "metasql"
 import util from "util"
 import child_process from "child_process"
 import worker_threads from "worker_threads"
@@ -26,15 +25,9 @@ import http from "http"
 import https from "https"
 import http2 from "http2"
 import dgram from "dgram"
-import axios from "axios"
-import bcrypt from "bcrypt"
-import concurrently from "concurrently"
-import cors from "cors"
-import express from "express"
 import fastify from "fastify"
-import funthreads from "funthreads"
-import metasql from "metasql"
-import morgan from "morgan"
+import pg from "pg"
+import typeorm from "typeorm"
 declare global {
 
     const node: {
@@ -68,15 +61,9 @@ declare global {
         dgram: typeof dgram
     }
     const npm: {
-        axios: typeof axios
-        bcrypt: typeof bcrypt
-        concurrently: typeof concurrently
-        cors: typeof cors
-        express: typeof express
         fastify: typeof fastify
-        funthreads: typeof funthreads
-        metasql: typeof metasql
-        morgan: typeof morgan
+        pg: typeof pg
+        typeorm: typeof typeorm
     }
     const api: {
         user: {
@@ -96,16 +83,15 @@ declare global {
 }
     const config : {
   "db": {
+    "type": "postgres",
     "database": "bikesdb",
     "password": "hhs13516",
     "port": 5432,
     "host": "127.0.0.1",
-    "user": "postgres",
-    "logger": {}
+    "username": "postgres"
   },
   "port": 8888,
-  "backURL": "127.0.0.1:8888"
+  "backURL": "127.0.0.1:undefined"
 }
-    const db: Database
     
 }

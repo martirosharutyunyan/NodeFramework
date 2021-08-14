@@ -1,7 +1,6 @@
 ({
     post: async ({ name }) => {
-        const product = await db.select('products', ['id', 'productNameHY'],  { codeOfProduct: "codeOfProduct" })
-        return product; 
+        return name; 
     },
 
     get: async ({ name }) => {

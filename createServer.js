@@ -1,14 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm')
-
-const methods = ['get', 'post', 'delete', 'put', 'head', 'connect', 'trace']
+const vm = require('vm');
+const slash = process.platform === 'win32' ? '\\' : '/';
+const methods = ['get', 'post', 'delete', 'put'];
 
 function getScript(string) {
-    return new vm.Script().runInThisContext()
+    return new vm.Script(string).runInThisContext();
 }
 
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 
 const getGlobalVariables = () => {
     const node = { process };
@@ -37,8 +37,8 @@ const getGlobalVariables = () => {
       }
       npm[name] = lib;
     }
-    Object.freeze(node)
-    Object.freeze(npm)
+    Object.freeze(node);
+    Object.freeze(npm);
     return { node, npm };
 }
 
@@ -56,8 +56,9 @@ const getDirectoriesRecursive = srcpath => {
     return [srcpath, ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
 }
 
-const apiPath = process.cwd() + '\\application\\api'
-const modulPath = process.cwd() + '\\application\\services'
+const apiPath = process.cwd() + `${slash}application${slash}api`;
+const modulPath = process.cwd() + `${slash}application${slash}services`;
+const typeormPath = process.cwd() + `${slash}application${slash}typeorm`;
 
 const folders = path => getDirectoriesRecursive(path).filter(e => e !== path)
 
@@ -91,7 +92,7 @@ const walk = (dir, done) => {
 const getFiles = async path => new Promise(res => {
     walk(path, (err, result) => {
         if(err) console.log(err)
-        const paths = result.map(e => e.split("\\").join('/')).filter(interface => {
+        const paths = result.map(e => e.split(slash).join('/')).filter(interface => {
             if(interface.includes('.map')) {
                 fs.promises.unlink(interface).catch(() => {}) 
                 return false;
@@ -107,7 +108,7 @@ const api = async () => {
     const data = await getFiles(apiPath)
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
     const folder = folders(apiPath)
-    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
+    folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
     })
     router.map(({ path, interface }) => {
@@ -122,9 +123,9 @@ Object.freeze(api)
 const services = async () => {
     let str = ''
     const data = await getFiles(modulPath)
-    const folder = folders(modulPath).filter(e => e.includes('application\\services'))
+    const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`))
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
+    folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}` 
     })
     router.map(({ path, interface }) => {
@@ -172,18 +173,18 @@ for (const name of dependencies) {
 Object.freeze(node)
 Object.freeze(npm)
 const { fs, vm } = node
-const { morgan, cors } = npm 
+const { typeorm } = npm 
 
 function getScript(string) {
-    return new vm.Script().runInThisContext()
+    return new vm.Script(string).runInThisContext()
 }
 
 const fastify = require('fastify')({ logger: true })
 const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const { Database } = require('metasql');
-const db = new Database(config.db)
+const { createConnection } = typeorm
+createConnection(config.db).then(() => {
 
-
+    
 ${data}
 ${modul}
 ${application}
@@ -191,11 +192,14 @@ const start = async () => {
     try {
       await fastify.listen(config.port)
     } catch (err) {
-      fastify.log.error(err)
+        fastify.log.error(err)
       process.exit(1)
     }
-  }
-start()`
+}
+
+Object.assign(global, { node, npm, services, api })
+start()
+})`
 }
 
 
@@ -205,7 +209,7 @@ const frontConnection = async () => {
     const data = await getFiles(apiPath)
     const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
     const folder = folders(apiPath)
-    folder.map(e => e.split('\\application')[1].split('\\').filter(e => e).join('.')).forEach(path => {
+    folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n    ${path} = {}` 
     })
     router.map(({ path, interface }) => {
@@ -219,12 +223,24 @@ const frontConnection = async () => {
     return Object.freeze(api)
 }
 `
-}            
+}          
+
+const typeorm = async () => {
+    let str = ''
+    const data = await getFiles(typeormPath)
+    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
+    router.map(({ path, interface }) => {
+        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
+        const data = JSON.stringify(getScript(fs.readFileSync(path, 'utf8')), null, 2)
+        console.log(data)
+    })
+    console.log(str)
+};
 
 const globalts = async () => {
     const apiStr = await api()
     const servicesStr = await services()
-    let application = 'import { Database } from "metasql"\n'
+    let application = ''
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
         .split('{}').join('{ get: Function, post: Function }')
@@ -252,12 +268,10 @@ ${npmStr}
 ${apiString}
 ${servicesString}
 ${confStr}
-    const db: Database
     
 }`;
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };
-
 
 const createServer = async () => {
     const data = await getFiles(apiPath)
@@ -273,12 +287,10 @@ fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     routers.forEach(({ rout, interface, callback }) => {
         Object.keys(rout).forEach(request => {
             if(!methods.includes(request)) return 
-            const body = request === 'get' ? 'query' : 'body'
             application += `
 fastify.${request}("${interface}", async (req, res) => {
     try {
-        const { ${body} } = req
-        res.send(await ${callback}.${request}(${body}))
+        res.send(await ${callback}.${request}({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }
@@ -286,6 +298,7 @@ fastify.${request}("${interface}", async (req, res) => {
             `
         })
     })
+    typeorm()
     globalts()
     const fastifyApp = await fastify(application)
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)
