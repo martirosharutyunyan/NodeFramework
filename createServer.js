@@ -170,6 +170,7 @@ Object.freeze(node);
 Object.freeze(npm);
 const { fs, vm } = node;
 const { typeorm } = npm; 
+const { getRepository } = typeorm
 
 function getScript(string) {
     return new vm.Script(string).runInThisContext();
@@ -179,7 +180,7 @@ const fastify = require('fastify')({ logger: true });
 const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 const { createConnection } = typeorm;
 
-createConnection(config.db).then(() => {
+createConnection().then(() => {
 
     
 ${data}
@@ -235,7 +236,7 @@ function getScript(string) {
 };
 const staticEntity = {
     id: {
-        type: Number,
+        type: 'int',
         primary: true,
         generated: true,
     },
@@ -251,10 +252,8 @@ const staticEntity = {
     },
 };
 const entity = getScript(fs.readFileSync('${path}', 'utf8'));
-const ${interface}Entity = new EntitySchema({
-    ...staticEntity,
-    ...entity,
-})
+entity.columns = { ...entity.columns, ...staticEntity}
+const ${interface}Entity = new EntitySchema(entity)
 
 module.exports = ${interface}Entity;
 `
@@ -263,14 +262,22 @@ module.exports = ${interface}Entity;
 };
 
 const typeorm = async () => {
+    // generateTypeormEntities()
     const data = await getFiles(typeormPath);
-    const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities'), interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    let str = `const db = {}`
+    router.map(({ interface, path }) => {
+        str += `\ndb.${interface} = getRepository(getScript(fs.readFile('${path}', 'utf8')))`
+    })
+    console.log(str)
 }
+
+typeorm()
 
 const globalts = async () => {
     const apiStr = await api()
     const servicesStr = await services()
-    let application = ''
+    let application = 'import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n'
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
         .split('{}').join('{ get: Function, post: Function }')
@@ -298,7 +305,7 @@ ${npmStr}
 ${apiString}
 ${servicesString}
 ${confStr}
-    
+interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }`;
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };

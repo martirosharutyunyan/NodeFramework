@@ -1,3 +1,4 @@
+import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"
 import util from "util"
 import child_process from "child_process"
 import worker_threads from "worker_threads"
@@ -93,5 +94,5 @@ declare global {
   "port": 8888,
   "backURL": "127.0.0.1:undefined"
 }
-    
+interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }

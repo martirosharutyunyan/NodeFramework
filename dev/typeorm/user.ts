@@ -1,15 +1,10 @@
 ({
-    name: {
-        type: 'varchar',
+    name: 'users',
+    columns: {
+        name: { type: 'varchar' },
+        surname: { type: 'varchar' }
     },
-    surname: {
-        type: 'varchar',
-    },
-}) as {
-    name: {
-        type: string,
-    },
-    surname: {
-        type: string
-    }
-}
+}) as EntitySchema<{
+    name: string,
+    surname: string,
+}>

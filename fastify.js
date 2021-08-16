@@ -31,6 +31,7 @@ Object.freeze(node);
 Object.freeze(npm);
 const { fs, vm } = node;
 const { typeorm } = npm; 
+const { getRepository } = typeorm
 
 function getScript(string) {
     return new vm.Script(string).runInThisContext();
@@ -40,7 +41,7 @@ const fastify = require('fastify')({ logger: true });
 const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 const { createConnection } = typeorm;
 
-createConnection(config.db).then(() => {
+createConnection().then(() => {
 
     
 
