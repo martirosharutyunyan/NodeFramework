@@ -42,9 +42,7 @@ const getGlobalVariables = () => {
     return { node, npm };
 }
 
-const flatten = lists => {
-    return lists.reduce((a, b) => a.concat(b), []);
-}
+const flatten = lists => lists.reduce((a, b) => a.concat(b), []);
 
 const getDirectories = srcpath => {
     return fs.readdirSync(srcpath)
@@ -52,15 +50,13 @@ const getDirectories = srcpath => {
     .filter(path => fs.statSync(path).isDirectory());
 }
 
-const getDirectoriesRecursive = srcpath => {
-    return [srcpath, ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
-}
+const getDirectoriesRecursive = srcpath => [srcpath, ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
 
 const apiPath = process.cwd() + `${slash}application${slash}api`;
 const modulPath = process.cwd() + `${slash}application${slash}services`;
 const typeormPath = process.cwd() + `${slash}application${slash}typeorm`;
 
-const folders = path => getDirectoriesRecursive(path).filter(e => e !== path)
+const folders = path => getDirectoriesRecursive(path).filter(e => e !== path);
 
 
 const walk = (dir, done) => {
@@ -91,56 +87,56 @@ const walk = (dir, done) => {
 
 const getFiles = async path => new Promise(res => {
     walk(path, (err, result) => {
-        if(err) console.log(err)
+        if(err) console.log(err);
         const paths = result.map(e => e.split(slash).join('/')).filter(interface => {
             if(interface.includes('.map')) {
-                fs.promises.unlink(interface).catch(() => {}) 
+                fs.promises.unlink(interface).catch(() => {}); 
                 return false;
             }
             return true;
         })
-        res(paths)
+        res(paths);
     })
 })
 
 const api = async () => {
-    let str = ''
+    let str = '';
     const data = await getFiles(apiPath)
-    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    const folder = folders(apiPath)
+    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
-        str += `\n${path} = {}` 
+        str += `\n${path} = {}`; 
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
+        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`;
     })
     return `
-const api = {}
+const api = {};
 ${str}
-Object.freeze(api)
+Object.freeze(api);
 `
 }
 const services = async () => {
-    let str = ''
-    const data = await getFiles(modulPath)
-    const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`))
-    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
+    let str = '';
+    const data = await getFiles(modulPath);
+    const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`));
+    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
-        str += `\n${path} = {}` 
+        str += `\n${path} = {}`;
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
+        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`;
     })
     return `
-const services = {}
+const services = {};
 ${str}
-Object.freeze(services)
+Object.freeze(services);
 `
 }
 
 const fastify = async application => {
-    const data = await api()
-    const modul = await services()
+    const data = await api();
+    const modul = await services();
     return `const node = { process };
 const npm = {};
     
@@ -170,18 +166,19 @@ for (const name of dependencies) {
 }
 
 
-Object.freeze(node)
-Object.freeze(npm)
-const { fs, vm } = node
-const { typeorm } = npm 
+Object.freeze(node);
+Object.freeze(npm);
+const { fs, vm } = node;
+const { typeorm } = npm; 
 
 function getScript(string) {
-    return new vm.Script(string).runInThisContext()
+    return new vm.Script(string).runInThisContext();
 }
 
-const fastify = require('fastify')({ logger: true })
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const { createConnection } = typeorm
+const fastify = require('fastify')({ logger: true });
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
+const { createConnection } = typeorm;
+
 createConnection(config.db).then(() => {
 
     
@@ -190,52 +187,85 @@ ${modul}
 ${application}
 const start = async () => {
     try {
-      await fastify.listen(config.port)
+        await fastify.listen(config.port);
     } catch (err) {
-        fastify.log.error(err)
-      process.exit(1)
+        fastify.log.error(err);
+        process.exit(1);
     }
-}
+};
 
-Object.assign(global, { node, npm, services, api })
-start()
+Object.assign(global, { node, npm, services, api });
+start();
 })`
 }
 
 
 
 const frontConnection = async () => {
-    let str = `module.exports = axios => {`
-    const data = await getFiles(apiPath)
-    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
-    const folder = folders(apiPath)
+    let str = `module.exports = axios => {`;
+    const data = await getFiles(apiPath);
+    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
-        str += `\n    ${path} = {}` 
+        str += `\n    ${path} = {}`; 
     })
     router.map(({ path, interface }) => {
         str += `
-    ${interface} = {}
-    ${interface}.get = async params => (await axios.get(\\\`${path}?$\\\{parse(params)}\\\`)).data
-    ${interface}.post = async params => (await axios.post("${path}", params)).data`
+    ${interface} = {};
+    ${interface}.get = async params => (await axios.get(\\\`${path}?$\\\{parse(params)}\\\`)).data;
+    ${interface}.post = async params => (await axios.post("${path}", params)).data;`
     })
     return `
     ${str}
-    return Object.freeze(api)
+    return Object.freeze(api);
 }
 `
 }          
 
-const typeorm = async () => {
-    let str = ''
-    const data = await getFiles(typeormPath)
-    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }))
+const generateTypeormEntities = async () => {
+    fs.existsSync(process.cwd() + '/application/typeorm-entities') || fs.mkdirSync(process.cwd() + '/application/typeorm-entities');
+    const data = await getFiles(typeormPath);
+    const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     router.map(({ path, interface }) => {
-        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`
-        const data = JSON.stringify(getScript(fs.readFileSync(path, 'utf8')), null, 2)
-        console.log(data)
-    })
-    console.log(str)
+        let str = `const vm = require('vm')
+const fs = require('fs')
+const { EntitySchema } = require('typeorm');
+function getScript(string) {
+    return new vm.Script(string).runInThisContext();
 };
+const staticEntity = {
+    id: {
+        type: Number,
+        primary: true,
+        generated: true,
+    },
+    createdAt: {
+        name: 'created_at',
+        type: 'timestamp with time zone',
+        createDate: true,
+    },
+    updatedAt: {
+        name: 'updated_at',
+        type: 'timestamp with time zone',
+        updateDate: true,
+    },
+};
+const entity = getScript(fs.readFileSync('${path}', 'utf8'));
+const ${interface}Entity = new EntitySchema({
+    ...staticEntity,
+    ...entity,
+})
+
+module.exports = ${interface}Entity;
+`
+        fs.writeFileSync(process.cwd() + `/application/typeorm-entities/${interface}.js`, str)
+    })
+};
+
+const typeorm = async () => {
+    const data = await getFiles(typeormPath);
+    const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+}
 
 const globalts = async () => {
     const apiStr = await api()
@@ -298,7 +328,6 @@ fastify.${request}("${interface}", async (req, res) => {
             `
         })
     })
-    typeorm()
     globalts()
     const fastifyApp = await fastify(application)
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)

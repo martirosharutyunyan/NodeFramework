@@ -27,57 +27,58 @@ for (const name of dependencies) {
 }
 
 
-Object.freeze(node)
-Object.freeze(npm)
-const { fs, vm } = node
-const { typeorm } = npm 
+Object.freeze(node);
+Object.freeze(npm);
+const { fs, vm } = node;
+const { typeorm } = npm; 
 
 function getScript(string) {
-    return new vm.Script(string).runInThisContext()
+    return new vm.Script(string).runInThisContext();
 }
 
-const fastify = require('fastify')({ logger: true })
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'))
-const { createConnection } = typeorm
+const fastify = require('fastify')({ logger: true });
+const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
+const { createConnection } = typeorm;
+
 createConnection(config.db).then(() => {
 
     
 
-const api = {}
+const api = {};
 
 api.user = {}
 api.app = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
 api.db = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/db.js', 'utf8'))
 api.user.getCity = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
 api.user.getProduct = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
-Object.freeze(api)
+Object.freeze(api);
 
 
-const services = {}
+const services = {};
 
 services.test = {}
 services.test.test = {}
 services.test.test.test = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test.js', 'utf8'))
 services.test.test.test2 = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test2.js', 'utf8'))
-Object.freeze(services)
+Object.freeze(services);
 
 
 fastify.get('/api/connection', (req, res) => res.send(`
     module.exports = axios => {
     api.user = {}
-    api.app = {}
-    api.app.get = async params => (await axios.get(\`/api/app?$\{parse(params)}\`)).data
-    api.app.post = async params => (await axios.post("/api/app", params)).data
-    api.db = {}
-    api.db.get = async params => (await axios.get(\`/api/db?$\{parse(params)}\`)).data
-    api.db.post = async params => (await axios.post("/api/db", params)).data
-    api.user.getCity = {}
-    api.user.getCity.get = async params => (await axios.get(\`/api/user/getCity?$\{parse(params)}\`)).data
-    api.user.getCity.post = async params => (await axios.post("/api/user/getCity", params)).data
-    api.user.getProduct = {}
-    api.user.getProduct.get = async params => (await axios.get(\`/api/user/getProduct?$\{parse(params)}\`)).data
-    api.user.getProduct.post = async params => (await axios.post("/api/user/getProduct", params)).data
-    return Object.freeze(api)
+    api.app = {};
+    api.app.get = async params => (await axios.get(\`/api/app?$\{parse(params)}\`)).data;
+    api.app.post = async params => (await axios.post("/api/app", params)).data;
+    api.db = {};
+    api.db.get = async params => (await axios.get(\`/api/db?$\{parse(params)}\`)).data;
+    api.db.post = async params => (await axios.post("/api/db", params)).data;
+    api.user.getCity = {};
+    api.user.getCity.get = async params => (await axios.get(\`/api/user/getCity?$\{parse(params)}\`)).data;
+    api.user.getCity.post = async params => (await axios.post("/api/user/getCity", params)).data;
+    api.user.getProduct = {};
+    api.user.getProduct.get = async params => (await axios.get(\`/api/user/getProduct?$\{parse(params)}\`)).data;
+    api.user.getProduct.post = async params => (await axios.post("/api/user/getProduct", params)).data;
+    return Object.freeze(api);
 }
 `))
     
@@ -139,13 +140,13 @@ fastify.get("/api/user/getProduct", async (req, res) => {
             
 const start = async () => {
     try {
-      await fastify.listen(config.port)
+        await fastify.listen(config.port);
     } catch (err) {
-        fastify.log.error(err)
-      process.exit(1)
+        fastify.log.error(err);
+        process.exit(1);
     }
-}
+};
 
-Object.assign(global, { node, npm, services, api })
-start()
+Object.assign(global, { node, npm, services, api });
+start();
 })
