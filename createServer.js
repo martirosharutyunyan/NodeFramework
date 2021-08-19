@@ -1,14 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const _ = require('lodash')
 const slash = process.platform === 'win32' ? '\\' : '/';
 const methods = ['get', 'post', 'delete', 'put'];
 
-function getScript(string) {
-    return new vm.Script(string).runInThisContext();
-}
-
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
+const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 
 const getGlobalVariables = () => {
     const node = { process };
@@ -108,7 +105,7 @@ const api = async () => {
         str += `\n${path} = {}`; 
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`;
+        str += `\n${interface} = require('${path}')`;
     })
     return `
 const api = {};
@@ -125,7 +122,7 @@ const services = async () => {
         str += `\n${path} = {}`;
     })
     router.map(({ path, interface }) => {
-        str += `\n${interface} = getScript(fs.readFileSync('${path}', 'utf8'))`;
+        str += `\n${interface} = require('${path}')`;
     })
     return `
 const services = {};
@@ -177,7 +174,7 @@ function getScript(string) {
 }
 
 const fastify = require('fastify')({ logger: true });
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
+const config = require(process.cwd() + '/application/config/config.js');
 const { createConnection } = typeorm;
 
 createConnection().then(() => {
@@ -231,9 +228,6 @@ const generateTypeormEntities = async () => {
         let str = `const vm = require('vm')
 const fs = require('fs')
 const { EntitySchema } = require('typeorm');
-function getScript(string) {
-    return new vm.Script(string).runInThisContext();
-};
 const staticEntity = {
     id: {
         type: 'int',
@@ -251,7 +245,7 @@ const staticEntity = {
         updateDate: true,
     },
 };
-const entity = getScript(fs.readFileSync('${path}', 'utf8'));
+const entity = require('${path}');
 entity.columns = { ...entity.columns, ...staticEntity}
 const ${interface}Entity = new EntitySchema(entity)
 
@@ -262,14 +256,14 @@ module.exports = ${interface}Entity;
 };
 
 const typeorm = async () => {
-    // generateTypeormEntities()
+    generateTypeormEntities()
     const data = await getFiles(typeormPath);
     const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities'), interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     let str = `const db = {}`
     router.map(({ interface, path }) => {
-        str += `\ndb.${interface} = getRepository(getScript(fs.readFile('${path}', 'utf8')))`
+        str += `\ndb.${interface} = getRepository(require('${path}'));`
     })
-    console.log(str)
+    console
 }
 
 typeorm()
@@ -277,7 +271,7 @@ typeorm()
 const globalts = async () => {
     const apiStr = await api()
     const servicesStr = await services()
-    let application = 'import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n'
+    let application = 'import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n';
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
         .split('{}').join('{ get: Function, post: Function }')
@@ -319,7 +313,7 @@ fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
         interface: interface.split('application')[1].slice(0, -3),
-        rout: getScript(fs.readFileSync(interface, 'utf8'))
+        rout: eval(fs.readFileSync(interface, 'utf8'))
     }))
     routers.forEach(({ rout, interface, callback }) => {
         Object.keys(rout).forEach(request => {
@@ -336,6 +330,7 @@ fastify.${request}("${interface}", async (req, res) => {
         })
     })
     globalts()
+    addModuleExports()
     const fastifyApp = await fastify(application)
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)
 }
@@ -343,3 +338,13 @@ fastify.${request}("${interface}", async (req, res) => {
 createServer()
 
 
+const addModuleExports = async () => {
+    const dirs = ['api', 'config', 'services', "typeorm"]
+    dirs.forEach(async folderPath => {
+        const files = await getFiles(process.cwd() + '/application/' + folderPath)
+        files.forEach(filePath => {
+            const data = fs.readFileSync(filePath, 'utf8')
+            data.startsWith('module.exports') || fs.writeFileSync(filePath, 'module.exports = ' + data)
+        })
+    })
+}

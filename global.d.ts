@@ -27,6 +27,7 @@ import https from "https"
 import http2 from "http2"
 import dgram from "dgram"
 import fastify from "fastify"
+import lodash from "lodash"
 import pg from "pg"
 import typeorm from "typeorm"
 declare global {
@@ -63,6 +64,7 @@ declare global {
     }
     const npm: {
         fastify: typeof fastify
+        lodash: typeof lodash
         pg: typeof pg
         typeorm: typeof typeorm
     }
@@ -83,16 +85,8 @@ declare global {
         }
 }
     const config : {
-  "db": {
-    "type": "postgres",
-    "database": "bikesdb",
-    "password": "hhs13516",
-    "port": 5432,
-    "host": "127.0.0.1",
-    "username": "postgres"
-  },
   "port": 8888,
-  "backURL": "127.0.0.1:undefined"
+  "backURL": "127.0.0.1:8888"
 }
 interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }

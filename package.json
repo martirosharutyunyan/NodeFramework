@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "fastify": "^3.20.2",
+    "lodash": "^4.17.21",
     "pg": "^8.7.1",
     "typeorm": "^0.2.37"
   },

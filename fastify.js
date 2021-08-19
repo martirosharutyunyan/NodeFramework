@@ -38,7 +38,7 @@ function getScript(string) {
 }
 
 const fastify = require('fastify')({ logger: true });
-const config = getScript(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
+const config = require(process.cwd() + '/application/config/config.js');
 const { createConnection } = typeorm;
 
 createConnection().then(() => {
@@ -48,10 +48,10 @@ createConnection().then(() => {
 const api = {};
 
 api.user = {}
-api.app = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/app.js', 'utf8'))
-api.db = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/db.js', 'utf8'))
-api.user.getCity = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getCity.js', 'utf8'))
-api.user.getProduct = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/api/user/getProduct.js', 'utf8'))
+api.app = require('D:/ /node-js/NodeFramework/application/api/app.js')
+api.db = require('D:/ /node-js/NodeFramework/application/api/db.js')
+api.user.getCity = require('D:/ /node-js/NodeFramework/application/api/user/getCity.js')
+api.user.getProduct = require('D:/ /node-js/NodeFramework/application/api/user/getProduct.js')
 Object.freeze(api);
 
 
@@ -59,8 +59,8 @@ const services = {};
 
 services.test = {}
 services.test.test = {}
-services.test.test.test = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test.js', 'utf8'))
-services.test.test.test2 = getScript(fs.readFileSync('D:/ /node-js/NodeFramework/application/services/test/test/test2.js', 'utf8'))
+services.test.test.test = require('D:/ /node-js/NodeFramework/application/services/test/test/test.js')
+services.test.test.test2 = require('D:/ /node-js/NodeFramework/application/services/test/test/test2.js')
 Object.freeze(services);
 
 
