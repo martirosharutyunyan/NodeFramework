@@ -6,5 +6,5 @@
     "host": "127.0.0.1",
     "username": "postgres",
     "entities": ["application/typeorm-entities/*.js"],
-    "migrations": ["application/migrations/*.js"]
+    "migrations": ["application/migrations/*.ts"]
 }

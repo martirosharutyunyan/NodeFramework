@@ -1,4 +1,6 @@
 import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"
+
+import { Repository } from 'typeorm'
 import util from "util"
 import child_process from "child_process"
 import worker_threads from "worker_threads"
@@ -87,6 +89,26 @@ declare global {
     const config : {
   "port": 8888,
   "backURL": "127.0.0.1:8888"
+}
+interface photo {
+    name: string;
+    photo: string;
+    id:number
+    createdAt: Date,
+    updatedAt: Date,
+}
+interface user {
+    name: string,
+    surname: string;
+    image: string;
+    id:number
+    createdAt: Date,
+    updatedAt: Date,
+}
+
+const db: {
+    photos: Repository<photo>
+    users: Repository<user>
 }
 interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }

@@ -1,3 +1,5 @@
 /node_modules
 /application
 /dev/config
+ormconfig.json
+fastify.js

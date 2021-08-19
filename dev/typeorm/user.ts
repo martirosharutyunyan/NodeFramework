@@ -11,8 +11,4 @@
             type: 'varchar',
         }
     },
-}) as EntitySchema<{
-    name: string,
-    surname: string;
-    image: string;
-}>
+}) as EntitySchema<user>

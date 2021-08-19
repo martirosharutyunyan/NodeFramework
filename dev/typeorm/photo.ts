@@ -4,7 +4,4 @@
         name: { type: 'varchar' },
         photo: { type: 'varchar' }
     }
-}) as EntitySchema<{
-    name: string;
-    photo: string;
-}>
+}) as EntitySchema<photo>

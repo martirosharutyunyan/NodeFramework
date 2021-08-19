@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const _ = require('lodash')
 const slash = process.platform === 'win32' ? '\\' : '/';
 const methods = ['get', 'post', 'delete', 'put'];
@@ -134,6 +133,7 @@ Object.freeze(services);
 const fastify = async application => {
     const data = await api();
     const modul = await services();
+    const db = await typeorm();
     return `const node = { process };
 const npm = {};
     
@@ -168,17 +168,21 @@ Object.freeze(npm);
 const { fs, vm } = node;
 const { typeorm } = npm; 
 const { getRepository } = typeorm
-
-function getScript(string) {
-    return new vm.Script(string).runInThisContext();
-}
-
 const fastify = require('fastify')({ logger: true });
 const config = require(process.cwd() + '/application/config/config.js');
 const { createConnection } = typeorm;
 
-createConnection().then(() => {
-
+createConnection({
+    "type": "postgres",
+    "database": "usersDB",
+    "password": "hhs13516",
+    "port": 5432,
+    "host": "127.0.0.1",
+    "username": "postgres",
+    "entities": ["application/typeorm-entities/*.js"],
+    "migrations": ["application/migrations/*.js"]
+}).then(() => {
+${db}
     
 ${data}
 ${modul}
@@ -191,8 +195,7 @@ const start = async () => {
         process.exit(1);
     }
 };
-
-Object.assign(global, { node, npm, services, api });
+Object.assign(global, { db, services, api, node, npm  })
 start();
 })`
 }
@@ -225,14 +228,12 @@ const generateTypeormEntities = async () => {
     const data = await getFiles(typeormPath);
     const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     router.map(({ path, interface }) => {
-        let str = `const vm = require('vm')
-const fs = require('fs')
-const { EntitySchema } = require('typeorm');
+        let str = `const { EntitySchema } = require('typeorm');
 const staticEntity = {
     id: {
-        type: 'int',
+        type: 'uuid',
         primary: true,
-        generated: true,
+        generated: 'uuid',
     },
     createdAt: {
         name: 'created_at',
@@ -246,7 +247,7 @@ const staticEntity = {
     },
 };
 const entity = require('${path}');
-entity.columns = { ...entity.columns, ...staticEntity}
+entity.columns = { ...staticEntity, ...entity.columns}
 const ${interface}Entity = new EntitySchema(entity)
 
 module.exports = ${interface}Entity;
@@ -261,17 +262,55 @@ const typeorm = async () => {
     const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities'), interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     let str = `const db = {}`
     router.map(({ interface, path }) => {
-        str += `\ndb.${interface} = getRepository(require('${path}'));`
+        const data = require(path)
+        str += `\ndb.${data.options.name} = getRepository(require('${path}'));`
     })
-    console
+    return str;
 }
 
-typeorm()
+const addModuleExports = async () => {
+    const dirs = ['api', 'config', 'services', "typeorm"]
+    dirs.forEach(async folderPath => {
+        const files = await getFiles(process.cwd() + '/application/' + folderPath)
+        files.forEach(filePath => {
+            const data = fs.readFileSync(filePath, 'utf8')
+            data.startsWith('module.exports') || fs.writeFileSync(filePath, 'module.exports = ' + data)
+        })
+    })
+}
+
+const interfaces = async () => {
+    const data = await getFiles(process.cwd() + '/dev/interfaces')
+    let str = ''
+    data.forEach(path => {
+        str += fs.readFileSync(path, 'utf8').slice(0, -1) + `    id:number
+    createdAt: Date,
+    updatedAt: Date,
+}\n`
+    })
+    return str;
+}
+
+const getDb = async () => {
+    const data = await getFiles(process.cwd() + '/application/typeorm-entities/')
+    let str = 'const db: {\n'
+    data.map(path => {
+        const getPath = path.split('/')
+        const entityName = getPath[getPath.length - 1].slice(0, -3)
+        const entity = require(path)
+        str += `    ${entity.options.name}: Repository<${entityName}>\n`
+    })
+    str += '}'
+    return str;
+}
 
 const globalts = async () => {
     const apiStr = await api()
     const servicesStr = await services()
-    let application = 'import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n';
+    const interface = await interfaces()
+    const db = await getDb()
+    let application = `import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n
+import { Repository } from 'typeorm'\n`;
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
         .split('{}').join('{ get: Function, post: Function }')
@@ -299,6 +338,8 @@ ${npmStr}
 ${apiString}
 ${servicesString}
 ${confStr}
+${interface}
+${db}
 interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }`;
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
@@ -329,22 +370,11 @@ fastify.${request}("${interface}", async (req, res) => {
             `
         })
     })
-    globalts()
     addModuleExports()
+    globalts()
     const fastifyApp = await fastify(application)
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)
 }
 
 createServer()
 
-
-const addModuleExports = async () => {
-    const dirs = ['api', 'config', 'services', "typeorm"]
-    dirs.forEach(async folderPath => {
-        const files = await getFiles(process.cwd() + '/application/' + folderPath)
-        files.forEach(filePath => {
-            const data = fs.readFileSync(filePath, 'utf8')
-            data.startsWith('module.exports') || fs.writeFileSync(filePath, 'module.exports = ' + data)
-        })
-    })
-}

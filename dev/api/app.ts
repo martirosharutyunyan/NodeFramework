@@ -1,10 +1,13 @@
 ({
-    post: async ({ name }) => {
-        const { path, fs } = node
-        return name + name
+    post: async (user: user) => {
+        const userEntity = db.users.create(user);
+        await db.users.save(userEntity)
+        console.log(userEntity)
+        return userEntity;
     },
 
-    get: async ({ name }) => {
-        return services.test.test.test.get({ name })
+    get: async ({ name }): Promise<user[]> => {
+        const users = await db.users.createQueryBuilder('users').getMany()
+        return users;
     }
 })

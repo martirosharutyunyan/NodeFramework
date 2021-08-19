@@ -32,17 +32,23 @@ Object.freeze(npm);
 const { fs, vm } = node;
 const { typeorm } = npm; 
 const { getRepository } = typeorm
-
-function getScript(string) {
-    return new vm.Script(string).runInThisContext();
-}
-
 const fastify = require('fastify')({ logger: true });
 const config = require(process.cwd() + '/application/config/config.js');
 const { createConnection } = typeorm;
 
-createConnection().then(() => {
-
+createConnection({
+    "type": "postgres",
+    "database": "usersDB",
+    "password": "hhs13516",
+    "port": 5432,
+    "host": "127.0.0.1",
+    "username": "postgres",
+    "entities": ["application/typeorm-entities/*.js"],
+    "migrations": ["application/migrations/*.js"]
+}).then(() => {
+const db = {}
+db.photos = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/photo.js'));
+db.users = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/user.js'));
     
 
 const api = {};
@@ -147,7 +153,6 @@ const start = async () => {
         process.exit(1);
     }
 };
-
-Object.assign(global, { node, npm, services, api });
+Object.assign(global, { db, services, api, node, npm  })
 start();
 })
