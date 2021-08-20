@@ -11,7 +11,8 @@
     "migration:generate": "node ./node_modules/typeorm/cli.js migration:generate -f ormconfig -d application/migrations -n",
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -f ormconfig",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -f ormconfig",
-    "lint:fix": "eslint --fix . --ext .ts"
+    "lint:fix": "eslint --fix . --ext .ts",
+    "pretest": "./node_modules/.bin/eslint --ignore-path .gitignore . --fix"
   },
   "keywords": [],
   "author": "",
@@ -45,9 +46,6 @@
     }
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "git add"
-    ]
+    "*.js": ["./node_modules/.bin/eslint --fix", "git add"]
   }
 }
