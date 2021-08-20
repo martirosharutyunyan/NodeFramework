@@ -36,6 +36,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-sonarjs": "^0.9.1",
     "eslint-plugin-unicorn": "^32.0.1",
+    "lint-staged": "^11.1.2",
     "nodemon": "^2.0.12",
     "ts-node": "^10.2.0",
     "typescript": "^4.3.5"
@@ -46,6 +47,9 @@
     }
   },
   "lint-staged": {
-    "*.js": ["./node_modules/.bin/eslint -- fix", "git add"]
+    "*.js": [
+      "./node_modules/.bin/eslint -- fix",
+      "git add"
+    ]
   }
 }
