@@ -89,62 +89,6 @@ fastify.get('/api/connection', (req, res) => res.send(`
 }
 `))
     
-fastify.post("/api/app", async (req, res) => {
-    try {
-        res.send(await api.app.post({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.get("/api/app", async (req, res) => {
-    try {
-        res.send(await api.app.get({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.post("/api/db", async (req, res) => {
-    try {
-        res.send(await api.db.post({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.get("/api/db", async (req, res) => {
-    try {
-        res.send(await api.db.get({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.get("/api/user/getCity", async (req, res) => {
-    try {
-        res.send(await api.user.getCity.get({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.post("/api/user/getProduct", async (req, res) => {
-    try {
-        res.send(await api.user.getProduct.post({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
-fastify.get("/api/user/getProduct", async (req, res) => {
-    try {
-        res.send(await api.user.getProduct.get({ ...req.body, ...req.headers, ...req.query }))
-    } catch(e) {
-        res.send(new Error(e))
-    }
-})
-            
 const start = async () => {
     try {
         await fastify.listen(config.port);
