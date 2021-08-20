@@ -11,6 +11,7 @@
     "migration:generate": "node ./node_modules/typeorm/cli.js migration:generate -f ormconfig -d application/migrations -n",
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -f ormconfig",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -f ormconfig",
+    "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts"
   },
   "keywords": [],
@@ -39,5 +40,16 @@
     "nodemon": "^2.0.12",
     "ts-node": "^10.2.0",
     "typescript": "^4.3.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }
