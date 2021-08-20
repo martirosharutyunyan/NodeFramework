@@ -10,7 +10,6 @@
 
 
 
-
     
         await db.users.createQueryBuilder('users').getMany(),
 });
