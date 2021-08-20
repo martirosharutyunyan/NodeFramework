@@ -89,20 +89,19 @@ declare global {
     const config : {
   "port": 8888
 }
-interface photo {
-    name: string;
-    photo: string;
-    id:number
+interface abstractInterface {
+    id: string,
     createdAt: Date,
     updatedAt: Date,
 }
-interface user {
-    name: string;
-    surname: string;
-    image: string;
-    id:number
-    createdAt: Date,
-    updatedAt: Date,
+interface photo  extends abstractInterface {
+    name: string,
+    photo: string,
+}
+interface user  extends abstractInterface {
+    name: string,
+    surname: string,
+    image: string,
 }
 
 const db: {

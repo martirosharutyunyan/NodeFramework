@@ -281,13 +281,12 @@ const addModuleExports = async () => {
 }
 
 const interfaces = async () => {
-    const data = await getFiles(process.cwd() + '/dev/interfaces')
+    const data = await getFiles(process.cwd() + '/dev/interfaces');
     let str = ''
     data.forEach(path => {
-        str += fs.readFileSync(path, 'utf8').slice(0, -2) + `    id:number
-    createdAt: Date,
-    updatedAt: Date,
-}\n`
+        const data = fs.readFileSync(path, 'utf8');
+        const index = data.search('{')
+        str += data.slice(0, index) + ' extends abstractInterface ' + data.slice(index, data.length)
     })
     return str;
 }
@@ -339,6 +338,11 @@ ${npmStr}
 ${apiString}
 ${servicesString}
 ${confStr}
+interface abstractInterface {
+    id: string,
+    createdAt: Date,
+    updatedAt: Date,
+}
 ${interface}
 ${db}
 interface EntitySchema<T> extends EntitySchemaOptions<T> {}
@@ -349,14 +353,14 @@ interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 const createServer = async () => {
     const data = await getFiles(apiPath)
     const front = await frontConnection()
-    addModuleExports()
+    await addModuleExports()
     let application = `
 fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     `
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
         interface: interface.split('application')[1].slice(0, -3),
-        rout: require(interface)
+        rout: eval(fs.readFileSync(interface, 'utf8'))
     }))
     routers.forEach(({ rout, interface, callback }) => {
         Object.keys(rout).forEach(request => {

@@ -5,6 +5,6 @@
     "port": 5432,
     "host": "localhost",
     "username": "postgres",
-    "entities": ["./application/typeorm-entities/*.js"],
-    "migrations": ["./application/migrations/*.ts"]
+    "entities": ["application/typeorm-entities/*.js"],
+    "migrations": ["application/migrations/*.ts"]
 }

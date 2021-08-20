@@ -1,5 +1,5 @@
 interface user {
-    name: string;
-    surname: string;
-    image: string;
+    name: string,
+    surname: string,
+    image: string,
 }
