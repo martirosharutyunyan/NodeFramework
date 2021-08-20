@@ -48,8 +48,8 @@
     }
   },
   "lint-staged": {
-    "*{.js,.ts}": [
-      "./node_modules/.bin/eslint --fix",
+    "*.ts": [
+      "eslint --fix",
       "git add"
     ]
   }
