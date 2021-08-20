@@ -72,23 +72,22 @@ declare global {
     }
     const api: {
         user: {
-                getCity: { get: Function, post: Function },
-                getProduct: { get: Function, post: Function }
+                getCity: { get: (...args: any) => any, post: (...args: any) => any },
+                getProduct: { get: (...args: any) => any, post: (...args: any) => any }
         },
-        app: { get: Function, post: Function },
-        db: { get: Function, post: Function }
+        app: { get: (...args: any) => any, post: (...args: any) => any },
+        db: { get: (...args: any) => any, post: (...args: any) => any }
 }
     const services: {
         test: {
                 test: {
-                        test: { get: Function, post: Function },
-                        test2: { get: Function, post: Function }
+                        test: { get: (...args: any) => any, post: (...args: any) => any },
+                        test2: { get: (...args: any) => any, post: (...args: any) => any }
                 }
         }
 }
     const config : {
-  "port": 8888,
-  "backURL": "127.0.0.1:8888"
+  "port": 8888
 }
 interface photo {
     name: string;
@@ -98,7 +97,7 @@ interface photo {
     updatedAt: Date,
 }
 interface user {
-    name: string,
+    name: string;
     surname: string;
     image: string;
     id:number

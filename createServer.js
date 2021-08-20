@@ -100,7 +100,7 @@ const api = async () => {
     const data = await getFiles(apiPath)
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
     const folder = folders(apiPath);
-    folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
+    folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`; 
     })
     router.map(({ path, interface }) => {
@@ -117,7 +117,7 @@ const services = async () => {
     const data = await getFiles(modulPath);
     const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`));
     const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
-    folder.map(e => e.split(`${slash}application`)[1].split('\\').filter(e => e).join('.')).forEach(path => {
+    folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`;
     })
     router.map(({ path, interface }) => {
@@ -174,13 +174,13 @@ const { createConnection } = typeorm;
 
 createConnection({
     "type": "postgres",
-    "database": "usersDB",
-    "password": "hhs13516",
+    "database": "test",
+    "password": "postgres",
     "port": 5432,
-    "host": "127.0.0.1",
+    "host": "localhost",
     "username": "postgres",
-    "entities": ["application/typeorm-entities/*.js"],
-    "migrations": ["application/migrations/*.js"]
+    "entities": ["./application/typeorm-entities/*.js"],
+    "migrations": ["./application/migrations/*.js"]
 }).then(() => {
 ${db}
     
@@ -224,6 +224,7 @@ const frontConnection = async () => {
 }          
 
 const generateTypeormEntities = async () => {
+    fs.existsSync(process.cwd() + '/application/migrations') || fs.mkdirSync(process.cwd() + '/application/migrations')
     fs.existsSync(process.cwd() + '/application/typeorm-entities') || fs.mkdirSync(process.cwd() + '/application/typeorm-entities');
     const data = await getFiles(typeormPath);
     const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
@@ -259,9 +260,9 @@ module.exports = ${interface}Entity;
 const typeorm = async () => {
     generateTypeormEntities()
     const data = await getFiles(typeormPath);
-    const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities'), interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities') }));
     let str = `const db = {}`
-    router.map(({ interface, path }) => {
+    router.map(({ path }) => {
         const data = require(path)
         str += `\ndb.${data.options.name} = getRepository(require('${path}'));`
     })
@@ -283,7 +284,7 @@ const interfaces = async () => {
     const data = await getFiles(process.cwd() + '/dev/interfaces')
     let str = ''
     data.forEach(path => {
-        str += fs.readFileSync(path, 'utf8').slice(0, -1) + `    id:number
+        str += fs.readFileSync(path, 'utf8').slice(0, -2) + `    id:number
     createdAt: Date,
     updatedAt: Date,
 }\n`
@@ -313,7 +314,7 @@ const globalts = async () => {
 import { Repository } from 'typeorm'\n`;
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
-        .split('{}').join('{ get: Function, post: Function }')
+        .split('{}').join('{ get: (...args: any) => any, post: (...args: any) => any }')
     const dependencies = [...Object.keys(node), ...Object.keys(npm)].forEach(modul => {
         if(modul === 'process') return ;
         application += `import ${modul} from "${modul}"\n`
@@ -348,13 +349,14 @@ interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 const createServer = async () => {
     const data = await getFiles(apiPath)
     const front = await frontConnection()
+    addModuleExports()
     let application = `
 fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     `
     const routers = data.map(interface => ({
         callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
         interface: interface.split('application')[1].slice(0, -3),
-        rout: eval(fs.readFileSync(interface, 'utf8'))
+        rout: require(interface)
     }))
     routers.forEach(({ rout, interface, callback }) => {
         Object.keys(rout).forEach(request => {
@@ -370,7 +372,6 @@ fastify.${request}("${interface}", async (req, res) => {
             `
         })
     })
-    addModuleExports()
     globalts()
     const fastifyApp = await fastify(application)
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)

@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "experimentalDecorators": true,
         "module": "commonjs",
         "esModuleInterop": true,
         "target": "ES2021",

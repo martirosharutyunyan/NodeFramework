@@ -1,10 +1,5 @@
 ({
-    post: async ({ name }) => {
-        return name; 
-    },
+    post: ({ name }) => name,
 
-    get: async ({ name }) => {
-        console.log('ok')
-        return await services.test.test.test.get({ name })
-    }
-})
+    get: async ({ name }) => await services.test.test.test.get({ name }),
+});

@@ -38,26 +38,26 @@ const { createConnection } = typeorm;
 
 createConnection({
     "type": "postgres",
-    "database": "usersDB",
-    "password": "hhs13516",
+    "database": "test",
+    "password": "postgres",
     "port": 5432,
-    "host": "127.0.0.1",
+    "host": "localhost",
     "username": "postgres",
-    "entities": ["application/typeorm-entities/*.js"],
-    "migrations": ["application/migrations/*.js"]
+    "entities": ["./application/typeorm-entities/*.js"],
+    "migrations": ["./application/migrations/*.js"]
 }).then(() => {
 const db = {}
-db.photos = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/photo.js'));
-db.users = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/user.js'));
+db.photos = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/photo.js'));
+db.users = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/user.js'));
     
 
 const api = {};
 
 api.user = {}
-api.app = require('D:/ /node-js/NodeFramework/application/api/app.js')
-api.db = require('D:/ /node-js/NodeFramework/application/api/db.js')
-api.user.getCity = require('D:/ /node-js/NodeFramework/application/api/user/getCity.js')
-api.user.getProduct = require('D:/ /node-js/NodeFramework/application/api/user/getProduct.js')
+api.app = require('/home/martiros/Desktop/programing/NodeFramework/application/api/app.js')
+api.db = require('/home/martiros/Desktop/programing/NodeFramework/application/api/db.js')
+api.user.getCity = require('/home/martiros/Desktop/programing/NodeFramework/application/api/user/getCity.js')
+api.user.getProduct = require('/home/martiros/Desktop/programing/NodeFramework/application/api/user/getProduct.js')
 Object.freeze(api);
 
 
@@ -65,8 +65,8 @@ const services = {};
 
 services.test = {}
 services.test.test = {}
-services.test.test.test = require('D:/ /node-js/NodeFramework/application/services/test/test/test.js')
-services.test.test.test2 = require('D:/ /node-js/NodeFramework/application/services/test/test/test2.js')
+services.test.test.test = require('/home/martiros/Desktop/programing/NodeFramework/application/services/test/test/test.js')
+services.test.test.test2 = require('/home/martiros/Desktop/programing/NodeFramework/application/services/test/test/test2.js')
 Object.freeze(services);
 
 

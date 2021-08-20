@@ -1,7 +1,7 @@
 ({
     name: 'users',
     columns: {
-        name: { 
+        name: {
             type: 'varchar',
         },
         surname: {
@@ -9,6 +9,6 @@
         },
         image: {
             type: 'varchar',
-        }
+        },
     },
-}) as EntitySchema<user>
+} as EntitySchema<user>);

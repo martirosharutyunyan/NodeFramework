@@ -1,0 +1,6 @@
+/application/migrations
+/global.d.ts
+/dev/interfaces
+/dev/static
+/createServer.js
+/fastify.js

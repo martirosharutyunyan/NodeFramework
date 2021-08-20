@@ -1,5 +1,3 @@
 ({
-    get: async ({ name }) => {
-        return name;
-    }
-})
+    get: ({ name }) => name,
+});

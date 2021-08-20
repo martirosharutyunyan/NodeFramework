@@ -1,15 +1,18 @@
-const ax = require('axios')
+const ax = require('axios');
 
-const parse = params => Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
-const api = {}
+const parse = (params) =>
+    Object.entries(params)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+const api = {};
 
-const getApi = async () => (await ax.get('http://localhost:8888/api/connection')).data
-new Promise(async res => {
-    console.log(eval((await getApi())))
-    res(eval(await getApi())(ax.create({ baseURL:'http://localhost:8888' })))
-    console.log(await getApi())
+const getApi = async () =>
+    (await ax.get('http://localhost:8888/api/connection')).data;
+new Promise(async (res) => {
+    console.log(eval(await getApi()));
+    res(eval(await getApi())(ax.create({ baseURL: 'http://localhost:8888' })));
+    console.log(await getApi());
     // @ts-ignore
-}).then(res => window.api = res)
+}).then((res) => (window.api = res));
 
-
-export default api
+export default api;

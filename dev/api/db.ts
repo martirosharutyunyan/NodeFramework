@@ -1,11 +1,5 @@
 ({
-    post: async ({ name }) => {
-        const { fs } = node
-        return name
-    },
+    post: ({ name }) => name,
 
-    get: async ({ a} ) => {
-        console.log(a)
-        return a + 2
-    }
-})
+    get: ({ a }: { a: number }) => a + 2,
+});
