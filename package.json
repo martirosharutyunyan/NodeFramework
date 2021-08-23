@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon --config nodemon.json",
-    "server": "npm run build && node fastify.js",
-    "build": "tsc && node createServer.js",
+    "server": "tsc && node createServer.js && node fastify.js",
     "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create -f ormconfig -d application/migrations -n",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -f ormconfig -d application/migrations -n",
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -f ormconfig",

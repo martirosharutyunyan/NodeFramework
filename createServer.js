@@ -382,4 +382,3 @@ fastify.${request}("${interface}", async (req, res) => {
 }
 
 createServer()
-
