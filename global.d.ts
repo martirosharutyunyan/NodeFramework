@@ -94,18 +94,19 @@ interface abstractInterface {
     createdAt: Date,
     updatedAt: Date,
 }
-interface photo  extends abstractInterface {
-    name: string,
-    photo: string,
+interface post  extends abstractInterface {
+    link: string,
+    image: string,
+    title: string,
+    content: string,
 }
 interface user  extends abstractInterface {
     name: string,
-    surname: string,
-    image: string,
+    surname: string;
 }
 
 const db: {
-    photos: Repository<photo>
+    posts: Repository<post>
     users: Repository<user>
 }
 interface EntitySchema<T> extends EntitySchemaOptions<T> {}

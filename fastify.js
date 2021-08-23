@@ -47,7 +47,7 @@ createConnection({
     "migrations": ["./application/migrations/*.js"]
 }).then(() => {
 const db = {}
-db.photos = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/photo.js'));
+db.posts = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/post.js'));
 db.users = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/user.js'));
     
 

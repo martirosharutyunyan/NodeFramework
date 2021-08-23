@@ -1,5 +1,5 @@
 ({
-    post: async (user: user) => {
+    post: async (user: user): Promise<user> => {
         const userEntity = db.users.create(user);
         await db.users.save(userEntity);
 
