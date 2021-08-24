@@ -258,7 +258,7 @@ module.exports = ${interface}Entity;
 };
 
 const typeorm = async () => {
-    generateTypeormEntities()
+    await generateTypeormEntities()
     const data = await getFiles(typeormPath);
     const router = data.map(interface => ({ path: interface.replace('typeorm', 'typeorm-entities') }));
     let str = `const db = {}`
@@ -309,8 +309,11 @@ const globalts = async () => {
     const servicesStr = await services()
     const interface = await interfaces()
     const db = await getDb()
-    let application = `import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"\n
-import { Repository } from 'typeorm'\n`;
+    let application = `import { TableType } from 'typeorm/metadata/types/TableTypes'
+import { EntitySchemaUniqueOptions } from 'typeorm/entity-schema/EntitySchemaUniqueOptions'
+import { EntitySchemaCheckOptions } from 'typeorm/entity-schema/EntitySchemaCheckOptions'
+import { EntitySchemaExclusionOptions } from 'typeorm/entity-schema/EntitySchemaExclusionOptions'
+import { EntitySchemaColumnOptions, EntitySchemaIndexOptions, EntitySchemaRelationOptions, OrderByCondition, Repository } from 'typeorm'\n`;
     const { node, npm } = getGlobalVariables()
     const getType = obj => JSON.stringify(eval(obj), null, 8).split('').filter(e => e === '"' ? '' : e).join('')
         .split('{}').join('{ get: (...args: any) => any, post: (...args: any) => any }')
@@ -338,14 +341,35 @@ ${npmStr}
 ${apiString}
 ${servicesString}
 ${confStr}
+    class EntitySchema<T> {
+        extends?: string;
+        target?: Function;
+        name: string;
+        tableName?: string;
+        database?: string;
+        schema?: string;
+        type?: TableType;
+        orderBy?: OrderByCondition;
+        columns: {
+            [P: string]: EntitySchemaColumnOptions;
+        };
+        relations?: {
+            [P: string]: EntitySchemaRelationOptions;
+        };
+        indices?: EntitySchemaIndexOptions[];
+        uniques?: EntitySchemaUniqueOptions[];
+        checks?: EntitySchemaCheckOptions[];
+        exclusions?: EntitySchemaExclusionOptions[];
+        synchronize?: boolean;
+    }
 interface abstractInterface {
     id: string,
     createdAt: Date,
     updatedAt: Date,
+    [P: string]: any,
 }
 ${interface}
 ${db}
-interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }`;
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };
@@ -376,8 +400,8 @@ fastify.${request}("${interface}", async (req, res) => {
             `
         })
     })
-    globalts()
     const fastifyApp = await fastify(application)
+    await globalts()
     fs.writeFileSync(process.cwd() + '/fastify.js', fastifyApp)
 }
 

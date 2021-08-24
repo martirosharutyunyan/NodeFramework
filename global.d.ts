@@ -1,6 +1,8 @@
-import { EntitySchemaOptions } from "typeorm/entity-schema/EntitySchemaOptions"
-
-import { Repository } from 'typeorm'
+import { TableType } from 'typeorm/metadata/types/TableTypes'
+import { EntitySchemaUniqueOptions } from 'typeorm/entity-schema/EntitySchemaUniqueOptions'
+import { EntitySchemaCheckOptions } from 'typeorm/entity-schema/EntitySchemaCheckOptions'
+import { EntitySchemaExclusionOptions } from 'typeorm/entity-schema/EntitySchemaExclusionOptions'
+import { EntitySchemaColumnOptions, EntitySchemaIndexOptions, EntitySchemaRelationOptions, OrderByCondition, Repository } from 'typeorm'
 import util from "util"
 import child_process from "child_process"
 import worker_threads from "worker_threads"
@@ -89,14 +91,34 @@ declare global {
     const config : {
   "port": 8888
 }
+    class EntitySchema<T> {
+        extends?: string;
+        target?: Function;
+        name: string;
+        tableName?: string;
+        database?: string;
+        schema?: string;
+        type?: TableType;
+        orderBy?: OrderByCondition;
+        columns: {
+            [P: string]: EntitySchemaColumnOptions;
+        };
+        relations?: {
+            [P: string]: EntitySchemaRelationOptions;
+        };
+        indices?: EntitySchemaIndexOptions[];
+        uniques?: EntitySchemaUniqueOptions[];
+        checks?: EntitySchemaCheckOptions[];
+        exclusions?: EntitySchemaExclusionOptions[];
+        synchronize?: boolean;
+    }
 interface abstractInterface {
     id: string,
     createdAt: Date,
     updatedAt: Date,
+    [P: string]: any,
 }
 interface post  extends abstractInterface {
-    link: string,
-    image: string,
     title: string,
     content: string,
 }
@@ -109,5 +131,4 @@ const db: {
     posts: Repository<post>
     users: Repository<user>
 }
-interface EntitySchema<T> extends EntitySchemaOptions<T> {}
 }
