@@ -130,78 +130,6 @@ Object.freeze(services);
 `
 }
 
-const fastify = async application => {
-    const data = await api();
-    const modul = await services();
-    const db = await typeorm();
-    return `const node = { process };
-const npm = {};
-    
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
-const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
-const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
-const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
-const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
-const internals = [...system, ...tools, ...streams, ...async, ...network];
-
-const pkg = require(process.cwd() + '/package.json');
-const dependencies = [...internals];
-if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
-
-for (const name of dependencies) {
-  let lib = null;
-  try {
-      lib = require(name);
-  } catch {
-      continue;
-  }
-  if (internals.includes(name)) {
-    node[name] = lib;
-    continue;
-  }
-  npm[name] = lib;
-}
-
-
-Object.freeze(node);
-Object.freeze(npm);
-const { fs, vm } = node;
-const { typeorm } = npm; 
-const { getRepository } = typeorm
-const fastify = require('fastify')({ logger: true });
-const config = require(process.cwd() + '/application/config/config.js');
-const { createConnection } = typeorm;
-
-createConnection({
-    "type": "postgres",
-    "database": "test",
-    "password": "postgres",
-    "port": 5432,
-    "host": "localhost",
-    "username": "postgres",
-    "entities": ["./application/typeorm-entities/*.js"],
-    "migrations": ["./application/migrations/*.js"]
-}).then(() => {
-${db}
-    
-${data}
-${modul}
-${application}
-const start = async () => {
-    try {
-        await fastify.listen(config.port);
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
-};
-Object.assign(global, { db, services, api, node, npm  })
-start();
-})`
-}
-
-
-
 const frontConnection = async () => {
     let str = `module.exports = axios => {`;
     const data = await getFiles(apiPath);
@@ -373,6 +301,73 @@ ${db}
 }`;
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };
+
+const fastify = async application => {
+    const data = await api();
+    const modul = await services();
+    const db = await typeorm();
+    return `const node = { process };
+const npm = {};
+    
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+const pkg = require(process.cwd() + '/package.json');
+const dependencies = [...internals];
+if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+for (const name of dependencies) {
+  let lib = null;
+  try {
+      lib = require(name);
+  } catch {
+      continue;
+  }
+  if (internals.includes(name)) {
+    node[name] = lib;
+    continue;
+  }
+  npm[name] = lib;
+}
+
+
+Object.freeze(node);
+Object.freeze(npm);
+const { typeorm: { getRepository, createConnection } } = npm; 
+const fastify = require('fastify')({ logger: true });
+const config = require(process.cwd() + '/application/config/config.js');
+
+createConnection({
+    "type": "postgres",
+    "database": "test",
+    "password": "postgres",
+    "port": 5432,
+    "host": "localhost",
+    "username": "postgres",
+    "entities": ["./application/typeorm-entities/*.js"],
+    "migrations": ["./application/migrations/*.js"]
+}).then(() => {
+${db}
+    
+${data}
+${modul}
+${application}
+const start = async () => {
+    try {
+        await fastify.listen(config.port);
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
+};
+Object.assign(global, { db, services, api, node, npm  })
+start();
+})`
+}
 
 const createServer = async () => {
     const data = await getFiles(apiPath)

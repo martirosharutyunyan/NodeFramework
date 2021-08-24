@@ -29,12 +29,9 @@ for (const name of dependencies) {
 
 Object.freeze(node);
 Object.freeze(npm);
-const { fs, vm } = node;
-const { typeorm } = npm; 
-const { getRepository } = typeorm
+const { typeorm: { getRepository, createConnection } } = npm; 
 const fastify = require('fastify')({ logger: true });
 const config = require(process.cwd() + '/application/config/config.js');
-const { createConnection } = typeorm;
 
 createConnection({
     "type": "postgres",
