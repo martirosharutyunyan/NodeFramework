@@ -1,10 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const _ = require('lodash')
 const slash = process.platform === 'win32' ? '\\' : '/';
 const methods = ['get', 'post', 'delete', 'put'];
-
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 
 const getGlobalVariables = () => {
     const node = { process };
@@ -174,8 +171,8 @@ const { createConnection } = typeorm;
 
 createConnection({
     "type": "postgres",
-    "database": "test",
-    "password": "postgres",
+    "database": "usersDB",
+    "password": "hhs13516",
     "port": 5432,
     "host": "localhost",
     "username": "postgres",
@@ -326,6 +323,7 @@ import { EntitySchemaColumnOptions, EntitySchemaIndexOptions, EntitySchemaRelati
     let npmStr = '    const npm: {'
     let apiString = `    const api: ${getType(apiStr)}`
     let servicesString = `    const services: ${getType(servicesStr)}`
+    const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
     const confStr = `    const config : ${JSON.stringify(config, null, 2)}`
     Object.keys(node).forEach(modul => {
         nodeStr += `\n        ${modul}: typeof ${modul}`

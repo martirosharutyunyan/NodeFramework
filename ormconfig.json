@@ -1,7 +1,7 @@
 {
     "type": "postgres",
-    "database": "test",
-    "password": "postgres",
+    "database": "usersDB",
+    "password": "hhs13516",
     "port": 5432,
     "host": "localhost",
     "username": "postgres",
