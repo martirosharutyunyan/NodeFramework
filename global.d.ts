@@ -73,23 +73,15 @@ declare global {
         typeorm: typeof typeorm
     }
     const api: {
-        user: {
-                getCity: { get: (...args: any) => any, post: (...args: any) => any },
-                getProduct: { get: (...args: any) => any, post: (...args: any) => any }
-        },
-        app: { get: (...args: any) => any, post: (...args: any) => any },
-        db: { get: (...args: any) => any, post: (...args: any) => any }
+        post: { get: (...args: any) => any, post: (...args: any) => any },
+        user: { get: (...args: any) => any, post: (...args: any) => any }
 }
     const services: {
-        test: {
-                test: {
-                        test: { get: (...args: any) => any, post: (...args: any) => any },
-                        test2: { get: (...args: any) => any, post: (...args: any) => any }
-                }
-        }
+        test2: { get: (...args: any) => any, post: (...args: any) => any }
 }
     const config : {
-  "port": 8888
+  "port": 8888,
+  "backURL": "127.0.0.1:8888"
 }
     class EntitySchema<T> {
         extends?: string;
@@ -119,12 +111,15 @@ interface abstractInterface {
     [P: string]: any,
 }
 interface post  extends abstractInterface {
-    title: string,
-    content: string,
+    title: string;
+    content: string;
+    user_id: string;
+    user: user;
 }
 interface user  extends abstractInterface {
     name: string,
     surname: string;
+    posts: post;
 }
 
 const db: {

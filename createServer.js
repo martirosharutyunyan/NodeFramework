@@ -1,10 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const _ = require('lodash')
 const slash = process.platform === 'win32' ? '\\' : '/';
 const methods = ['get', 'post', 'delete', 'put'];
-
-const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
 
 const getGlobalVariables = () => {
     const node = { process };
@@ -79,7 +76,7 @@ const walk = (dir, done) => {
     });
 };
 
-
+const getSlashPath = (interface, path) => interface.split(path)[1].slice(0, -3).split('/').filter(e => e).join('.')
 
 const getFiles = async path => new Promise(res => {
     walk(path, (err, result) => {
@@ -98,7 +95,7 @@ const getFiles = async path => new Promise(res => {
 const api = async () => {
     let str = '';
     const data = await getFiles(apiPath)
-    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'application') }));
     const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`; 
@@ -116,7 +113,7 @@ const services = async () => {
     let str = '';
     const data = await getFiles(modulPath);
     const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`));
-    const router = data.map(interface => ({ path: interface, interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'application') }));
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`;
     })
@@ -130,10 +127,82 @@ Object.freeze(services);
 `
 }
 
+const fastify = async application => {
+    const data = await api();
+    const modul = await services();
+    const db = await typeorm();
+    return `const node = { process };
+const npm = {};
+    
+const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+const internals = [...system, ...tools, ...streams, ...async, ...network];
+
+const pkg = require(process.cwd() + '/package.json');
+const dependencies = [...internals];
+if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+
+for (const name of dependencies) {
+  let lib = null;
+  try {
+      lib = require(name);
+  } catch {
+      continue;
+  }
+  if (internals.includes(name)) {
+    node[name] = lib;
+    continue;
+  }
+  npm[name] = lib;
+}
+
+
+Object.freeze(node);
+Object.freeze(npm);
+const { fs, vm } = node;
+const { typeorm } = npm; 
+const { getRepository } = typeorm
+const fastify = require('fastify')({ logger: true });
+const config = require(process.cwd() + '/application/config/config.js');
+const { createConnection } = typeorm;
+
+createConnection({
+    "type": "postgres",
+    "database": "usersDB",
+    "password": "hhs13516",
+    "port": 5432,
+    "host": "localhost",
+    "username": "postgres",
+    "entities": ["./application/typeorm-entities/*.js"],
+    "migrations": ["./application/migrations/*.js"]
+}).then(() => {
+${db}
+    
+${data}
+${modul}
+${application}
+const start = async () => {
+    try {
+        await fastify.listen(config.port);
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
+};
+Object.assign(global, { db, services, api, node, npm  })
+start();
+})`
+}
+
+
+
 const frontConnection = async () => {
     let str = `module.exports = axios => {`;
     const data = await getFiles(apiPath);
-    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: getSlashPath(interfaces, 'application') }));
     const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n    ${path} = {}`; 
@@ -155,7 +224,7 @@ const generateTypeormEntities = async () => {
     fs.existsSync(process.cwd() + '/application/migrations') || fs.mkdirSync(process.cwd() + '/application/migrations')
     fs.existsSync(process.cwd() + '/application/typeorm-entities') || fs.mkdirSync(process.cwd() + '/application/typeorm-entities');
     const data = await getFiles(typeormPath);
-    const router = data.map(interface => ({ path: interface, interface: interface.split('typeorm')[1].slice(0, -3).split('/').filter(e => e).join('.') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'typoerm') }));
     router.map(({ path, interface }) => {
         let str = `const { EntitySchema } = require('typeorm');
 const staticEntity = {
@@ -254,6 +323,7 @@ import { EntitySchemaColumnOptions, EntitySchemaIndexOptions, EntitySchemaRelati
     let npmStr = '    const npm: {'
     let apiString = `    const api: ${getType(apiStr)}`
     let servicesString = `    const services: ${getType(servicesStr)}`
+    const config = eval(fs.readFileSync(process.cwd() + '/application/config/config.js', 'utf8'));
     const confStr = `    const config : ${JSON.stringify(config, null, 2)}`
     Object.keys(node).forEach(modul => {
         nodeStr += `\n        ${modul}: typeof ${modul}`
@@ -377,7 +447,7 @@ const createServer = async () => {
 fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     `
     const routers = data.map(interface => ({
-        callback: interface.split('application')[1].slice(0, -3).split('/').filter(e => e).join('.'),
+        callback: getSlashPath(interfaces, 'applications'),
         interface: interface.split('application')[1].slice(0, -3),
         rout: eval(fs.readFileSync(interface, 'utf8'))
     }))
