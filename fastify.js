@@ -29,14 +29,17 @@ for (const name of dependencies) {
 
 Object.freeze(node);
 Object.freeze(npm);
-const { typeorm: { getRepository, createConnection } } = npm; 
+const { fs, vm } = node;
+const { typeorm } = npm; 
+const { getRepository } = typeorm
 const fastify = require('fastify')({ logger: true });
 const config = require(process.cwd() + '/application/config/config.js');
+const { createConnection } = typeorm;
 
 createConnection({
     "type": "postgres",
-    "database": "usersDB",
-    "password": "hhs13516",
+    "database": "postgres",
+    "password": "postgres",
     "port": 5432,
     "host": "localhost",
     "username": "postgres",
@@ -44,28 +47,50 @@ createConnection({
     "migrations": ["./application/migrations/*.js"]
 }).then(() => {
 const db = {}
-db.posts = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/post.js'));
-db.users = getRepository(require('D:/ /node-js/NodeFramework/application/typeorm-entities/user.js'));
+db.posts = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/post.js'));
+db.users = getRepository(require('/home/martiros/Desktop/programing/NodeFramework/application/typeorm-entities/user.js'));
     
 
 const api = {};
 
-api.post = require('D:/ /node-js/NodeFramework/application/api/post.js')
-api.user = require('D:/ /node-js/NodeFramework/application/api/user.js')
+api.user = {}
+api.app = require('/home/martiros/Desktop/programing/NodeFramework/application/api/app.js')
+api.db = require('/home/martiros/Desktop/programing/NodeFramework/application/api/db.js')
+api.post = require('/home/martiros/Desktop/programing/NodeFramework/application/api/post.js')
+api.user.getCity = require('/home/martiros/Desktop/programing/NodeFramework/application/api/user/getCity.js')
+api.user.getProduct = require('/home/martiros/Desktop/programing/NodeFramework/application/api/user/getProduct.js')
+api.user = require('/home/martiros/Desktop/programing/NodeFramework/application/api/user.js')
 Object.freeze(api);
 
 
 const services = {};
 
-services.test2 = require('D:/ /node-js/NodeFramework/application/services/test2.js')
+services.test = {}
+services.test.test = {}
+services.test.test.test = require('/home/martiros/Desktop/programing/NodeFramework/application/services/test/test/test.js')
+services.test.test.test2 = require('/home/martiros/Desktop/programing/NodeFramework/application/services/test/test/test2.js')
+services.test2 = require('/home/martiros/Desktop/programing/NodeFramework/application/services/test2.js')
 Object.freeze(services);
 
 
 fastify.get('/api/connection', (req, res) => res.send(`
     module.exports = axios => {
+    api.user = {}
+    api.app = {};
+    api.app.get = async params => (await axios.get(\`/api/app?$\{parse(params)}\`)).data;
+    api.app.post = async params => (await axios.post("/api/app", params)).data;
+    api.db = {};
+    api.db.get = async params => (await axios.get(\`/api/db?$\{parse(params)}\`)).data;
+    api.db.post = async params => (await axios.post("/api/db", params)).data;
     api.post = {};
     api.post.get = async params => (await axios.get(\`/api/post?$\{parse(params)}\`)).data;
     api.post.post = async params => (await axios.post("/api/post", params)).data;
+    api.user.getCity = {};
+    api.user.getCity.get = async params => (await axios.get(\`/api/user/getCity?$\{parse(params)}\`)).data;
+    api.user.getCity.post = async params => (await axios.post("/api/user/getCity", params)).data;
+    api.user.getProduct = {};
+    api.user.getProduct.get = async params => (await axios.get(\`/api/user/getProduct?$\{parse(params)}\`)).data;
+    api.user.getProduct.post = async params => (await axios.post("/api/user/getProduct", params)).data;
     api.user = {};
     api.user.get = async params => (await axios.get(\`/api/user?$\{parse(params)}\`)).data;
     api.user.post = async params => (await axios.post("/api/user", params)).data;
@@ -73,6 +98,38 @@ fastify.get('/api/connection', (req, res) => res.send(`
 }
 `))
     
+fastify.post("/api/app", async (req, res) => {
+    try {
+        res.send(await api.app.post({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.get("/api/app", async (req, res) => {
+    try {
+        res.send(await api.app.get({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.post("/api/db", async (req, res) => {
+    try {
+        res.send(await api.db.post({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.get("/api/db", async (req, res) => {
+    try {
+        res.send(await api.db.get({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
 fastify.get("/api/post", async (req, res) => {
     try {
         res.send(await api.post.get({ ...req.body, ...req.headers, ...req.query }))
@@ -92,6 +149,30 @@ fastify.post("/api/post", async (req, res) => {
 fastify.delete("/api/post", async (req, res) => {
     try {
         res.send(await api.post.delete({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.get("/api/user/getCity", async (req, res) => {
+    try {
+        res.send(await api.user.getCity.get({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.post("/api/user/getProduct", async (req, res) => {
+    try {
+        res.send(await api.user.getProduct.post({ ...req.body, ...req.headers, ...req.query }))
+    } catch(e) {
+        res.send(new Error(e))
+    }
+})
+            
+fastify.get("/api/user/getProduct", async (req, res) => {
+    try {
+        res.send(await api.user.getProduct.get({ ...req.body, ...req.headers, ...req.query }))
     } catch(e) {
         res.send(new Error(e))
     }

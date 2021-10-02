@@ -95,7 +95,7 @@ const getFiles = async path => new Promise(res => {
 const api = async () => {
     let str = '';
     const data = await getFiles(apiPath)
-    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'application') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interface, 'application') }));
     const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`; 
@@ -113,7 +113,7 @@ const services = async () => {
     let str = '';
     const data = await getFiles(modulPath);
     const folder = folders(modulPath).filter(e => e.includes(`application${slash}services`));
-    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'application') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interface, 'application') }));
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n${path} = {}`;
     })
@@ -202,7 +202,7 @@ start();
 const frontConnection = async () => {
     let str = `module.exports = axios => {`;
     const data = await getFiles(apiPath);
-    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: getSlashPath(interfaces, 'application') }));
+    const router = data.map(interface => ({ path: interface.split('application')[1].slice(0, -3), interface: getSlashPath(interface, 'application') }));
     const folder = folders(apiPath);
     folder.map(e => e.split(`${slash}application`)[1].split(slash).filter(e => e).join('.')).forEach(path => {
         str += `\n    ${path} = {}`; 
@@ -224,7 +224,7 @@ const generateTypeormEntities = async () => {
     fs.existsSync(process.cwd() + '/application/migrations') || fs.mkdirSync(process.cwd() + '/application/migrations')
     fs.existsSync(process.cwd() + '/application/typeorm-entities') || fs.mkdirSync(process.cwd() + '/application/typeorm-entities');
     const data = await getFiles(typeormPath);
-    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interfaces, 'typoerm') }));
+    const router = data.map(interface => ({ path: interface, interface: getSlashPath(interface, 'typeorm') }));
     router.map(({ path, interface }) => {
         let str = `const { EntitySchema } = require('typeorm');
 const staticEntity = {
@@ -372,72 +372,72 @@ ${db}
     fs.writeFileSync(process.cwd() + '/global.d.ts', app)
 };
 
-const fastify = async application => {
-    const data = await api();
-    const modul = await services();
-    const db = await typeorm();
-    return `const node = { process };
-const npm = {};
+// const fastify = async application => {
+//     const data = await api();
+//     const modul = await services();
+//     const db = await typeorm();
+//     return `const node = { process };
+// const npm = {};
     
-const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
-const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
-const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
-const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
-const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
-const internals = [...system, ...tools, ...streams, ...async, ...network];
+// const system = ['util', 'child_process', 'worker_threads', 'os', 'v8', 'vm'];
+// const tools = ['path', 'url', 'string_decoder', 'querystring', 'assert'];
+// const streams = ['stream', 'fs', 'crypto', 'zlib', 'readline'];
+// const async = ['perf_hooks', 'async_hooks', 'timers', 'events'];
+// const network = ['dns', 'net', 'tls', 'http', 'https', 'http2', 'dgram'];
+// const internals = [...system, ...tools, ...streams, ...async, ...network];
 
-const pkg = require(process.cwd() + '/package.json');
-const dependencies = [...internals];
-if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
+// const pkg = require(process.cwd() + '/package.json');
+// const dependencies = [...internals];
+// if (pkg.dependencies) dependencies.push(...Object.keys(pkg.dependencies));
 
-for (const name of dependencies) {
-  let lib = null;
-  try {
-      lib = require(name);
-  } catch {
-      continue;
-  }
-  if (internals.includes(name)) {
-    node[name] = lib;
-    continue;
-  }
-  npm[name] = lib;
-}
+// for (const name of dependencies) {
+//   let lib = null;
+//   try {
+//       lib = require(name);
+//   } catch {
+//       continue;
+//   }
+//   if (internals.includes(name)) {
+//     node[name] = lib;
+//     continue;
+//   }
+//   npm[name] = lib;
+// }
 
 
-Object.freeze(node);
-Object.freeze(npm);
-const { typeorm: { getRepository, createConnection } } = npm; 
-const fastify = require('fastify')({ logger: true });
-const config = require(process.cwd() + '/application/config/config.js');
+// Object.freeze(node);
+// Object.freeze(npm);
+// const { typeorm: { getRepository, createConnection } } = npm; 
+// const fastify = require('fastify')({ logger: true });
+// const config = require(process.cwd() + '/application/config/config.js');
 
-createConnection({
-    "type": "postgres",
-    "database": "test",
-    "password": "postgres",
-    "port": 5432,
-    "host": "localhost",
-    "username": "postgres",
-    "entities": ["./application/typeorm-entities/*.js"],
-    "migrations": ["./application/migrations/*.js"]
-}).then(() => {
-${db}
+// createConnection({
+//     "type": "postgres",
+//     "database": "test",
+//     "password": "postgres",
+//     "port": 5432,
+//     "host": "localhost",
+//     "username": "postgres",
+//     "entities": ["./application/typeorm-entities/*.js"],
+//     "migrations": ["./application/migrations/*.js"]
+// }).then(() => {
+// ${db}
     
-${data}
-${modul}
-${application}
-const start = async () => {
-    try {
-        await fastify.listen(config.port);
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
-};
-Object.assign(global, { db, services, api, node, npm  })
-start();
-})`
-}
+// ${data}
+// ${modul}
+// ${application}
+// const start = async () => {
+//     try {
+//         await fastify.listen(config.port);
+//     } catch (err) {
+//         fastify.log.error(err);
+//         process.exit(1);
+//     }
+// };
+// Object.assign(global, { db, services, api, node, npm  })
+// start();
+// })`
+// }
 
 const createServer = async () => {
     const data = await getFiles(apiPath)
@@ -447,7 +447,7 @@ const createServer = async () => {
 fastify.get('/api/connection', (req, res) => res.send(\`${front}\`))
     `
     const routers = data.map(interface => ({
-        callback: getSlashPath(interfaces, 'applications'),
+        callback: getSlashPath(interface, 'application'),
         interface: interface.split('application')[1].slice(0, -3),
         rout: eval(fs.readFileSync(interface, 'utf8'))
     }))
